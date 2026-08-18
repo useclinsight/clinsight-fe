@@ -208,7 +208,6 @@ export async function getOverview(): Promise<Overview> {
   }
 
   const computed: Overview = {
-    ...overviewMock,
     verificationStatus: verif?.status ?? 'not_submitted',
     rejectionReason: verif?.rejectionReason ?? null,
     showVerificationBanner: !isVerified,
@@ -217,7 +216,7 @@ export async function getOverview(): Promise<Overview> {
       activeCases,
       completedCases,
       earnings,
-      earningsChange: isVerified ? (overviewMock.summary.earningsChange ?? 0) : undefined,
+      earningsChange: undefined,
     },
     currentCase: null,
     caseRequests: [],
