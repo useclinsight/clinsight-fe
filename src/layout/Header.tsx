@@ -3,10 +3,9 @@
 import { ArrowDown01Icon, Cancel01Icon, Menu01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Image from 'next/image';
-// import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import DutyStatusToggle from '@/components/doctor/DutyStatusToggle';
-// import { getActiveCases } from '@/services/doctor';
+import { fetchVerificationStatus, getAvailability } from '@/services/doctor/service';
 
 function UserHeader({
   onMenuToggle,
@@ -16,8 +15,23 @@ function UserHeader({
   isSidebarOpen: boolean;
 }) {
   const [isOnDuty, setIsOnDuty] = useState<boolean>(false);
-  const [notificationCount, setNotificationCount] = useState<number>(6);
-  const [doctorName, setDoctorName] = useState<string | null>('Light');
+  const [isApproved, setIsApproved] = useState<boolean>(true);
+  const [notificationCount] = useState<number>(6);
+  const [doctorName] = useState<string | null>('Light');
+
+  useEffect(() => {
+    async function loadHeaderState() {
+      const verif = await fetchVerificationStatus();
+      if (verif) {
+        setIsApproved(verif.status === 'approved' || verif.status === 'verified');
+      }
+      const avail = await getAvailability();
+      if (avail) {
+        setIsOnDuty(avail.isOnDuty);
+      }
+    }
+    loadHeaderState();
+  }, []);
 
   return (
     <header className="min-h-18 sm:min-h-23 w-full bg-[#FFFFFE] border border-l-0 border-[#F0F0F0] p-4 lg:px-10 md:px-6 sm:py-6.25 flex justify-between items-center gap-5 sm:gap-2.5 sm:flex-row">
@@ -34,7 +48,12 @@ function UserHeader({
         />
 
         <div className="flex gap-2.5 md:gap-4 lg:gap-6.25 items-center">
-          <DutyStatusToggle isOnDuty={isOnDuty} onToggle={() => setIsOnDuty((prev) => !prev)} />
+          <DutyStatusToggle
+            isOnDuty={isOnDuty}
+            disabled={!isApproved}
+            disabledReason="Approval required: Your doctor verification must be approved before you can go on duty."
+            onToggle={() => setIsOnDuty((prev) => !prev)}
+          />
           <button className="flex relative">
             <Image
               src="/assets/dashboard/bell.svg"

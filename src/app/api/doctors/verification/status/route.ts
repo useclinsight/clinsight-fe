@@ -14,11 +14,9 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    if (!response.ok) return Response.json(null, { status: response.status });
-
-    const data = await response.json();
-    return Response.json(data);
+    const data = await response.json().catch(() => null);
+    return Response.json(data, { status: response.status });
   } catch {
-    return Response.json(null, { status: 500 });
+    return Response.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
