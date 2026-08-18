@@ -39,6 +39,7 @@ export function Footer() {
   ];
   if (
     hideOnRoutes.includes(pathname) ||
+    pathname.startsWith('/resources/') ||
     pathname.startsWith('/user') ||
     pathname.startsWith('/verification')
   ) {
