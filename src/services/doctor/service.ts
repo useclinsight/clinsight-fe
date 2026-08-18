@@ -101,7 +101,9 @@ export async function fetchVerificationStatus(): Promise<VerificationStatusRespo
     };
   } catch (error) {
     if (error instanceof ApiError) {
-      console.warn(`[Verification Status] Backend API returned HTTP ${error.status}: ${error.message}`);
+      console.warn(
+        `[Verification Status] Backend API returned HTTP ${error.status}: ${error.message}`,
+      );
     } else {
       console.error('Failed to fetch verification status:', error);
     }
@@ -122,7 +124,9 @@ export async function fetchDoctorStatistics(): Promise<DoctorStatistics | null> 
     };
   } catch (error) {
     if (error instanceof ApiError) {
-      console.warn(`[Doctor Statistics] Backend API returned HTTP ${error.status}: ${error.message}`);
+      console.warn(
+        `[Doctor Statistics] Backend API returned HTTP ${error.status}: ${error.message}`,
+      );
     } else {
       console.error('Failed to fetch doctor statistics:', error);
     }
@@ -142,7 +146,9 @@ export async function getAvailability(): Promise<DoctorDutyStatus | null> {
     };
   } catch (error) {
     if (error instanceof ApiError) {
-      console.warn(`[Doctor Availability] Backend API returned HTTP ${error.status}: ${error.message}`);
+      console.warn(
+        `[Doctor Availability] Backend API returned HTTP ${error.status}: ${error.message}`,
+      );
     } else {
       console.error('Failed to fetch availability:', error);
     }

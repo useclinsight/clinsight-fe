@@ -16,8 +16,8 @@ function UserHeader({
   isSidebarOpen: boolean;
 }) {
   const [isOnDuty, setIsOnDuty] = useState<boolean>(false);
-  const [isApproved, setIsApproved] = useState<boolean>(true);
-  const [notificationCount] = useState<number>(6);
+  const [isApproved, setIsApproved] = useState<boolean>(false);
+  const [notificationCount] = useState<number>(0);
   const [doctorName, setDoctorName] = useState<string>('');
 
   useEffect(() => {

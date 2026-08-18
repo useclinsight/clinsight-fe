@@ -129,15 +129,27 @@ export const apiClient = {
     return this.request<T>(endpoint, { ...options, method: 'GET' });
   },
 
-  async post<T = unknown>(endpoint: string, body?: unknown, options: RequestOptions = {}): Promise<T> {
+  async post<T = unknown>(
+    endpoint: string,
+    body?: unknown,
+    options: RequestOptions = {},
+  ): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'POST', body });
   },
 
-  async patch<T = unknown>(endpoint: string, body?: unknown, options: RequestOptions = {}): Promise<T> {
+  async patch<T = unknown>(
+    endpoint: string,
+    body?: unknown,
+    options: RequestOptions = {},
+  ): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'PATCH', body });
   },
 
-  async put<T = unknown>(endpoint: string, body?: unknown, options: RequestOptions = {}): Promise<T> {
+  async put<T = unknown>(
+    endpoint: string,
+    body?: unknown,
+    options: RequestOptions = {},
+  ): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'PUT', body });
   },
 
