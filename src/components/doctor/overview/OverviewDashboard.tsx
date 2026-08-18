@@ -41,33 +41,11 @@ export default function OverviewDashboard({
       {/* Summary Cards */}
       <Summary overview={overview} isLoading={isLoading} isError={isError} onRetry={onRetry} />
 
-      {/* Dashboard Sections Gated by Verification Status */}
-      {!isApproved ? (
-        <div className="relative rounded-2xl border border-dashed border-gray-300 bg-gray-50/50 p-6 md:p-10 text-center">
-          <div className="max-w-md mx-auto flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-blue-50 text-primary-blue flex items-center justify-center font-bold text-lg">
-              🔒
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Dashboard Content Gated</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Your account verification is currently{' '}
-              <span className="font-semibold capitalize text-gray-800">
-                {currentStatus.replace('_', ' ')}
-              </span>
-              . Once your medical credentials are approved, active case reviews and match requests
-              will be unlocked.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Current Case Section */}
-          <CurrentCase currentCase={currentCaseData} />
+      {/* Current Case Section */}
+      <CurrentCase currentCase={isApproved ? currentCaseData : null} />
 
-          {/* Available Cases Section */}
-          <AvailableCases cases={casesList} badgeCount="10+" />
-        </>
-      )}
+      {/* Available Cases Section */}
+      <AvailableCases cases={isApproved ? casesList : []} />
     </div>
   );
 }

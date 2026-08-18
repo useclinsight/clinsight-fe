@@ -5,6 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import DutyStatusToggle from '@/components/doctor/DutyStatusToggle';
+import { getCurrentUser } from '@/lib/auth';
 import { fetchVerificationStatus, getAvailability } from '@/services/doctor/service';
 
 function UserHeader({
@@ -15,12 +16,19 @@ function UserHeader({
   isSidebarOpen: boolean;
 }) {
   const [isOnDuty, setIsOnDuty] = useState<boolean>(false);
-  const [isApproved, setIsApproved] = useState<boolean>(true);
-  const [notificationCount] = useState<number>(6);
-  const [doctorName] = useState<string | null>('Light');
+  const [isApproved, setIsApproved] = useState<boolean>(false);
+  const [notificationCount] = useState<number>(0);
+  const [doctorName, setDoctorName] = useState<string>('');
 
   useEffect(() => {
     async function loadHeaderState() {
+      const user = await getCurrentUser();
+      if (user) {
+        const name = user.first_name
+          ? `${user.first_name} ${user.last_name || ''}`.trim()
+          : user.name || user.email?.split('@')[0] || '';
+        setDoctorName(name);
+      }
       const verif = await fetchVerificationStatus();
       if (verif) {
         setIsApproved(verif.status === 'approved' || verif.status === 'verified');
@@ -36,7 +44,7 @@ function UserHeader({
   return (
     <header className="min-h-18 sm:min-h-23 w-full bg-[#FFFFFE] border border-l-0 border-[#F0F0F0] p-4 lg:px-10 md:px-6 sm:py-6.25 flex justify-between items-center gap-5 sm:gap-2.5 sm:flex-row">
       <h1 className="hidden sm:block sm:text-2xl lg:text-[32px] font-semibold">
-        Welcome Dr. {doctorName}
+        Welcome {doctorName ? `Dr. ${doctorName}` : 'Doctor'}
       </h1>
       <div className="flex items-center max-sm:w-full max-sm:justify-between">
         <Image
