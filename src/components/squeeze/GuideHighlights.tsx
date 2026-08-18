@@ -31,15 +31,20 @@ const HIGHLIGHTS: Highlight[] = [
   },
 ];
 
-export function GuideHighlights() {
+type GuideHighlightsProps = {
+  heading?: string;
+  items?: readonly Highlight[];
+};
+
+export function GuideHighlights({ heading, items = HIGHLIGHTS }: GuideHighlightsProps) {
   return (
     <section className="container mx-auto px-6 py-12 lg:px-12 lg:py-16">
       <h2 className="text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-        What You Will Learn Inside This Guide
+        {heading ?? 'What You Will Learn Inside This Guide'}
       </h2>
 
       <ul className="mx-auto mt-8 flex max-w-5xl flex-wrap justify-center gap-5 lg:mt-12">
-        {HIGHLIGHTS.map((item) => (
+        {items.map((item) => (
           <li
             key={item.title}
             className="w-full rounded-2xl bg-[#EAF1FB] p-6 text-center sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.834rem)]"

@@ -1,20 +1,8 @@
-import { pageMetadata } from '@/lib/pageMetadata';
-import { SqueezeHeader } from '@/components/squeeze/SqueezeHeader';
-import { SqueezeHero } from '@/components/squeeze/SqueezeHero';
-import { GuideHighlights } from '@/components/squeeze/GuideHighlights';
+import { permanentRedirect } from 'next/navigation';
 
-export const metadata = pageMetadata(
-  '5 Lab Values Every Nigerian Should Understand — Clinsight',
-  'Download the free guide and decode your lab results before your next doctor visit.',
-  '/squeeze',
-);
+const GUIDE_URL = '/resources/5-lab-values-every-nigerian-should-understand';
 
+/** Keep the legacy campaign URL pointed at the canonical resource URL. */
 export default function SqueezePage() {
-  return (
-    <div className="bg-white">
-      <SqueezeHeader />
-      <SqueezeHero />
-      <GuideHighlights />
-    </div>
-  );
+  permanentRedirect(GUIDE_URL);
 }
