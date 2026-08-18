@@ -219,8 +219,9 @@ export async function getOverview(): Promise<Overview> {
       earnings,
       earningsChange: isVerified ? (overviewMock.summary.earningsChange ?? 0) : undefined,
     },
-    caseRequests: isVerified ? overviewMock.caseRequests : [],
-    cases: isVerified ? overviewMock.cases : [],
+    currentCase: null,
+    caseRequests: [],
+    cases: [],
   };
 
   return computed;
