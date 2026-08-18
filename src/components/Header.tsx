@@ -22,6 +22,7 @@ export function Header() {
   const hideOnRoutes = [
     '/waitlist',
     '/squeeze',
+    '/resources/5-lab-values-every-nigerian-should-understand',
     '/delete-account',
     '/signup',
     '/login',
@@ -36,6 +37,7 @@ export function Header() {
 
   if (
     hideOnRoutes.includes(pathname) ||
+    pathname.startsWith('/resources/') ||
     pathname.startsWith('/user') ||
     pathname.startsWith('/verification')
   ) {
