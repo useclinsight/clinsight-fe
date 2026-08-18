@@ -66,12 +66,12 @@ export default function AvailableCases({
         /* Empty State */
         <div className="flex flex-col items-center text-center py-10 my-2">
           <Image
-              src="/assets/dashboard/empty-illustration.png"
-              alt="No Current Case"
-              width={48}
-              height={48}
-              className="w-14 h-14 rounded-full object-cover border border-gray-100"
-            />
+            src="/assets/dashboard/empty-illustration.png"
+            alt="No Current Case"
+            width={48}
+            height={48}
+            className="w-14 h-14 rounded-full object-cover border border-gray-100"
+          />
           <h4 className="font-bold text-base md:text-lg text-[#111827]">No Available Cases</h4>
           <p className="text-sm text-[#6B7280] max-w-sm mx-auto mt-1">
             There are no cases in the queue right now. New patient cases will appear here once

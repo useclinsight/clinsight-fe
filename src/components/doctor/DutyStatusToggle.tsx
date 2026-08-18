@@ -28,8 +28,10 @@ export default function DutyStatusToggle({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const effectiveIsOnDuty = propIsOnDuty ?? internalIsOnDuty ?? externalDutyStatus?.isOnDuty ?? initialIsOnDuty;
-  const remainingSeconds = internalRemainingSeconds ?? externalDutyStatus?.remainingDutySeconds ?? 0;
+  const effectiveIsOnDuty =
+    propIsOnDuty ?? internalIsOnDuty ?? externalDutyStatus?.isOnDuty ?? initialIsOnDuty;
+  const remainingSeconds =
+    internalRemainingSeconds ?? externalDutyStatus?.remainingDutySeconds ?? 0;
 
   // Countdown timer for shift duration if set
   useEffect(() => {
@@ -57,7 +59,10 @@ export default function DutyStatusToggle({
 
   const handleToggle = async () => {
     if (disabled) {
-      setErrorMessage(disabledReason || 'Approval required: Your doctor verification must be approved before you can go on duty.');
+      setErrorMessage(
+        disabledReason ||
+          'Approval required: Your doctor verification must be approved before you can go on duty.',
+      );
       setTimeout(() => setErrorMessage(null), 4000);
       return;
     }
@@ -94,8 +99,8 @@ export default function DutyStatusToggle({
           disabled
             ? 'Toggle disabled. Verification required.'
             : effectiveIsOnDuty
-            ? 'On duty. Click to go off duty.'
-            : 'Off duty. Click to go on duty.'
+              ? 'On duty. Click to go off duty.'
+              : 'Off duty. Click to go on duty.'
         }
         onClick={handleToggle}
         disabled={isLoading}
@@ -104,9 +109,9 @@ export default function DutyStatusToggle({
           disabled
             ? 'bg-[#E5E7EB] opacity-60 cursor-not-allowed'
             : effectiveIsOnDuty
-            ? 'bg-[#DEF6E7] hover:bg-[#D1FAE5]'
-            : 'bg-[#EBEBEB] hover:bg-[#E0E0E0]',
-          isLoading && 'opacity-70 cursor-wait'
+              ? 'bg-[#DEF6E7] hover:bg-[#D1FAE5]'
+              : 'bg-[#EBEBEB] hover:bg-[#E0E0E0]',
+          isLoading && 'opacity-70 cursor-wait',
         )}
       >
         <div className="flex items-center gap-2">
@@ -116,8 +121,8 @@ export default function DutyStatusToggle({
               disabled
                 ? 'bg-gray-400'
                 : effectiveIsOnDuty
-                ? 'bg-[#147638] animate-pulse'
-                : 'bg-text-secondary',
+                  ? 'bg-[#147638] animate-pulse'
+                  : 'bg-text-secondary',
             )}
           />
           <span
@@ -126,8 +131,8 @@ export default function DutyStatusToggle({
               disabled
                 ? 'text-gray-500'
                 : effectiveIsOnDuty
-                ? 'text-[#147638]'
-                : 'text-text-secondary',
+                  ? 'text-[#147638]'
+                  : 'text-text-secondary',
             )}
           >
             {effectiveIsOnDuty ? 'On duty' : 'Off duty'}

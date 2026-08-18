@@ -19,7 +19,7 @@
   --color-settings-img-placeholder: #def6e7;
   --color-settings-subheader-text: #64748b;
   --color-blue-1: #104ead;
-  --color-withdraw-card: rgba(16, 78, 173, 0.10);
+  --color-withdraw-card: rgba(16, 78, 173, 0.1);
 
   --animate-hourglass: hourglass-flip 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 
@@ -163,8 +163,8 @@
 
   /* Remove autofill background */
   input:-webkit-autofill,
-  input:-webkit-autofill:hover, 
-  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
   input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 1000px white inset !important;
     -webkit-text-fill-color: var(--color-text-primary) !important;
@@ -194,7 +194,6 @@
     @apply font-semibold text-sm leading-[150%] tracking-[-1%];
   }
 
-
   /* forms */
 
   .input__field {
@@ -214,7 +213,6 @@
     @apply border border-primary-blue rounded-[26.462px] p-10;
   }
 
-  
   .personal_info_title {
     @apply text-[#94A3B8]  text-[13.231px] leading-[19.846px] tracking-[1.323px] uppercase;
   }
@@ -229,8 +227,8 @@
     border-radius: 10.585px;
   }
 
-  .payment_overview_card_shadow{
-    box-shadow:  0 1.732px 3.464px 0 rgba(0, 0, 0, 0.05);
+  .payment_overview_card_shadow {
+    box-shadow: 0 1.732px 3.464px 0 rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -238,10 +236,10 @@
   @apply leading-[130%];
 }
 
-@utility border-0.8{
+@utility border-0.8 {
   border-width: 0.866px;
 }
 
-@utility card-radius{
+@utility card-radius {
   border-radius: 6.928px;
 }
