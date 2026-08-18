@@ -43,7 +43,9 @@ export function DoctorVerificationBanner() {
     fetchVerificationStatus().then((res) => {
       if (!cancelled) applyResult(res);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [applyResult]);
 
   useEffect(() => {
@@ -84,7 +86,12 @@ export default function VerificationBanner({
 }) {
   const [dismissed, setDismissed] = useState(false);
 
-  if (dismissed || initialStatus === 'hidden' || initialStatus === 'approved' || initialStatus === 'verified') {
+  if (
+    dismissed ||
+    initialStatus === 'hidden' ||
+    initialStatus === 'approved' ||
+    initialStatus === 'verified'
+  ) {
     // Approved state recedes into background or renders unobtrusively
     if (initialStatus === 'approved' || initialStatus === 'verified') {
       if (dismissed) return null;
@@ -139,9 +146,12 @@ export default function VerificationBanner({
               <span className="text-amber-800 font-bold text-xs">!</span>
             </div>
             <div>
-              <h4 className="font-bold text-base text-[#92400E]">Unable to load verification status</h4>
+              <h4 className="font-bold text-base text-[#92400E]">
+                Unable to load verification status
+              </h4>
               <p className="text-sm text-[#B45309] max-w-2xl mt-0.5 leading-relaxed">
-                We couldn&apos;t verify your account verification status. Please check your network connection and try again.
+                We couldn&apos;t verify your account verification status. Please check your network
+                connection and try again.
               </p>
             </div>
           </div>
@@ -199,7 +209,7 @@ export default function VerificationBanner({
               </button>
             ) : (
               <Link
-                href="/auth/verification/credentials-verification"
+                href="/verification/credentials-verification"
                 className="w-full md:w-auto bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] text-white font-semibold text-sm px-5 py-2.5 rounded-[8px] transition-colors cursor-pointer text-center block"
               >
                 Resubmit Credentials
@@ -212,8 +222,13 @@ export default function VerificationBanner({
   }
 
   // Pending / In Progress / Not Submitted State
-  if (initialStatus === 'in_progress' || initialStatus === 'pending' || initialStatus === 'not_submitted') {
-    const title = initialStatus === 'not_submitted' ? 'Verification required' : 'Verification under review';
+  if (
+    initialStatus === 'in_progress' ||
+    initialStatus === 'pending' ||
+    initialStatus === 'not_submitted'
+  ) {
+    const title =
+      initialStatus === 'not_submitted' ? 'Verification required' : 'Verification under review';
     const description =
       initialStatus === 'not_submitted'
         ? 'Please submit your medical credentials to unlock availability settings and patient case reviews.'
@@ -252,7 +267,7 @@ export default function VerificationBanner({
               </button>
             ) : (
               <Link
-                href="/auth/verification/credentials-verification"
+                href="/verification/credentials-verification"
                 className="w-full md:w-auto bg-primary-blue hover:bg-primary-blue/80 text-white font-semibold text-sm px-5 py-2.5 rounded-[8px] transition-colors cursor-pointer text-center block"
               >
                 {ctaText}
