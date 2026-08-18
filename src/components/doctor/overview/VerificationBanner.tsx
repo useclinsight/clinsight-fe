@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Cancel01Icon, RefreshIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { dismissVerificationBanner } from '@/services/doctor/service';
+import { dismissVerificationBanner, fetchVerificationStatus } from '@/services/doctor/service';
 
 export type VerificationStatus =
   | 'unsuccessful'
@@ -17,6 +17,47 @@ export type VerificationStatus =
   | 'approved'
   | 'rejected'
   | 'error';
+
+export function DoctorVerificationBanner() {
+  const [status, setStatus] = useState<VerificationStatus>('not_submitted');
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
+
+  const loadStatus = useCallback(async () => {
+    setIsError(false);
+    const res = await fetchVerificationStatus();
+    if (res) {
+      setStatus(res.status as VerificationStatus);
+      setRejectionReason(res.rejectionReason ?? null);
+    } else {
+      setIsError(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadStatus();
+  }, [loadStatus]);
+
+  useEffect(() => {
+    if (status === 'pending' || status === 'in_progress') {
+      const interval = setInterval(() => {
+        loadStatus();
+      }, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [status, loadStatus]);
+
+  return (
+    <div className="w-full max-w-7xl mx-auto px-2.5 pt-2 pb-2">
+      <VerificationBanner
+        status={status}
+        rejectionReason={rejectionReason}
+        isError={isError}
+        onRetry={loadStatus}
+      />
+    </div>
+  );
+}
 
 export default function VerificationBanner({
   status: initialStatus = 'unsuccessful',

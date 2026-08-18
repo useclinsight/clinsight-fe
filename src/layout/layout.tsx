@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import { DoctorVerificationBanner } from '@/components/doctor/overview/VerificationBanner';
 
 export default function DashboardLayout({
   children,
@@ -39,7 +40,10 @@ export default function DashboardLayout({
           isSidebarOpen={isSidebarOpen}
           onMenuToggle={() => setIsSidebarOpen((state) => !state)}
         />
-        <main className="flex-1 overflow-y-auto p-2.5">{children}</main>
+        <main className="flex-1 overflow-y-auto p-2.5">
+          {user === 'Doctor' && <DoctorVerificationBanner />}
+          {children}
+        </main>
       </div>
     </div>
   );

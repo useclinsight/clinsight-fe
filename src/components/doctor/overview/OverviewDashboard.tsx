@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import CurrentCase from './CurrentCase';
 import AvailableCases from './AvailableCases';
 import Summary from './Summary';
-import VerificationBanner, { VerificationStatus } from './VerificationBanner';
-import { Overview, CaseRequest, Case, fetchVerificationStatus } from '@/services/doctor/service';
+import { Overview, CaseRequest, Case } from '@/services/doctor/service';
 
 export default function OverviewDashboard({
   overview,
@@ -18,41 +16,8 @@ export default function OverviewDashboard({
   isError?: boolean;
   onRetry?: () => void;
 }) {
-  const [currentStatus, setCurrentStatus] = useState<VerificationStatus>(
-    (overview?.verificationStatus as VerificationStatus) ?? 'not_submitted'
-  );
-  const [rejectionReason, setRejectionReason] = useState<string | null>(
-    overview?.rejectionReason ?? null
-  );
-  const [verifError, setVerifError] = useState<boolean>(false);
-
+  const currentStatus = overview?.verificationStatus ?? 'not_submitted';
   const isApproved = currentStatus === 'approved' || currentStatus === 'verified';
-
-  // Function to refresh verification status from API
-  const refreshStatus = useCallback(async () => {
-    setVerifError(false);
-    const res = await fetchVerificationStatus();
-    if (res) {
-      setCurrentStatus(res.status as VerificationStatus);
-      setRejectionReason(res.rejectionReason ?? null);
-    } else {
-      setVerifError(true);
-    }
-  }, []);
-
-  // Poll verification status while in pending / in_progress state
-  useEffect(() => {
-    if (currentStatus === 'pending' || currentStatus === 'in_progress') {
-      const interval = setInterval(() => {
-        refreshStatus();
-      }, 10000); // 10 seconds polling
-
-      return () => clearInterval(interval);
-    }
-  }, [currentStatus, refreshStatus]);
-
-  const isDismissed = overview?.isVerificationDismissed ?? false;
-  const showBanner = overview?.showVerificationBanner ?? !isDismissed;
 
   const casesList = overview?.caseRequests ?? overview?.cases ?? [];
   const firstItem = casesList[0] as (CaseRequest & Case) | undefined;
@@ -73,16 +38,6 @@ export default function OverviewDashboard({
 
   return (
     <div className="flex flex-col gap-6 pt-2.5 pb-10 px-2.5 max-w-7xl mx-auto w-full">
-      {/* Verification Status Banner */}
-      {showBanner && (
-        <VerificationBanner
-          status={currentStatus}
-          rejectionReason={rejectionReason}
-          isError={verifError}
-          onRetry={refreshStatus}
-        />
-      )}
-
       {/* Summary Cards */}
       <Summary
         overview={overview}
