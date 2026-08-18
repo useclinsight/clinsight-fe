@@ -1,4 +1,5 @@
 import overviewMock from '@/mocks/doctor/overview.json';
+import { apiClient, ApiError } from '@/lib/api-client';
 
 export interface CaseRequest {
   id: string;
@@ -89,74 +90,68 @@ export function formatLargeNumber(value: number): string {
 
 export async function fetchVerificationStatus(): Promise<VerificationStatusResponse | null> {
   try {
-    const res = await fetch('/api/doctors/verification/status', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    const data = json.data || json || {};
+    const json = await apiClient.get<Record<string, unknown>>('/api/doctors/verification/status');
+    const data = (json?.data || json || {}) as Record<string, unknown>;
     return {
-      status: data.status ?? 'not_submitted',
-      rejectionReason: data.rejection_reason ?? data.rejectionReason ?? null,
-      licenseNumber: data.license_number,
-      specialty: data.specialty,
-      updatedAt: data.updated_at,
+      status: (data.status as VerificationStatusResponse['status']) ?? 'not_submitted',
+      rejectionReason: (data.rejection_reason ?? data.rejectionReason ?? null) as string | null,
+      licenseNumber: data.license_number as string | undefined,
+      specialty: data.specialty as string | undefined,
+      updatedAt: data.updated_at as string | undefined,
     };
   } catch (error) {
-    console.error('Failed to fetch verification status:', error);
+    if (error instanceof ApiError) {
+      console.warn(
+        `[Verification Status] Backend API returned HTTP ${error.status}: ${error.message}`,
+      );
+    } else {
+      console.error('Failed to fetch verification status:', error);
+    }
     return null;
   }
 }
 
 export async function fetchDoctorStatistics(): Promise<DoctorStatistics | null> {
   try {
-    const res = await fetch('/api/doctors/dashboard/statistics', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    const data = json.data || {};
+    const json = await apiClient.get<Record<string, unknown>>('/api/doctors/dashboard/statistics');
+    const data = (json?.data || {}) as Record<string, unknown>;
     return {
-      pendingReviews: data.pending_reviews ?? 0,
-      acceptedCases: data.accepted_cases ?? 0,
-      completedCases: data.completed_cases ?? 0,
-      earnings: data.earnings ?? 0,
-      totalCases: data.total_cases ?? 0,
+      pendingReviews: (data.pending_reviews as number) ?? 0,
+      acceptedCases: (data.accepted_cases as number) ?? 0,
+      completedCases: (data.completed_cases as number) ?? 0,
+      earnings: (data.earnings as number) ?? 0,
+      totalCases: (data.total_cases as number) ?? 0,
     };
   } catch (error) {
-    console.error('Failed to fetch doctor statistics:', error);
+    if (error instanceof ApiError) {
+      console.warn(
+        `[Doctor Statistics] Backend API returned HTTP ${error.status}: ${error.message}`,
+      );
+    } else {
+      console.error('Failed to fetch doctor statistics:', error);
+    }
     return null;
   }
 }
 
 export async function getAvailability(): Promise<DoctorDutyStatus | null> {
   try {
-    const res = await fetch('/api/doctors/availability', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    const data = json.data || {};
+    const json = await apiClient.get<Record<string, unknown>>('/api/doctors/availability');
+    const data = (json?.data || {}) as Record<string, unknown>;
     return {
-      isOnDuty: data.on_duty ?? data.is_on_duty ?? false,
-      onDutySince: data.on_duty_since ?? null,
-      onDutyExpiresAt: data.on_duty_expires_at ?? null,
-      remainingDutySeconds: data.remaining_duty_seconds ?? 0,
+      isOnDuty: (data.on_duty ?? data.is_on_duty ?? false) as boolean,
+      onDutySince: (data.on_duty_since ?? null) as string | null,
+      onDutyExpiresAt: (data.on_duty_expires_at ?? null) as string | null,
+      remainingDutySeconds: (data.remaining_duty_seconds ?? 0) as number,
     };
   } catch (error) {
-    console.error('Failed to fetch availability:', error);
+    if (error instanceof ApiError) {
+      console.warn(
+        `[Doctor Availability] Backend API returned HTTP ${error.status}: ${error.message}`,
+      );
+    } else {
+      console.error('Failed to fetch availability:', error);
+    }
     return null;
   }
 }
@@ -165,25 +160,20 @@ export async function updateDutyStatus(
   isOnDuty: boolean,
 ): Promise<DoctorDutyStatus | { error: string }> {
   try {
-    const res = await fetch('/api/doctors/availability', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ on_duty: isOnDuty }),
+    const json = await apiClient.patch<Record<string, unknown>>('/api/doctors/availability', {
+      on_duty: isOnDuty,
     });
-    const json = await res.json();
-    if (!res.ok) {
-      return { error: json.detail || json.message || 'Error updating availability status.' };
-    }
-    const data = json.data || {};
+    const data = (json?.data || {}) as Record<string, unknown>;
     return {
-      isOnDuty: data.on_duty ?? data.is_on_duty ?? false,
-      onDutySince: data.on_duty_since ?? null,
-      onDutyExpiresAt: data.on_duty_expires_at ?? null,
-      remainingDutySeconds: data.remaining_duty_seconds ?? 0,
+      isOnDuty: (data.on_duty ?? data.is_on_duty ?? false) as boolean,
+      onDutySince: (data.on_duty_since ?? null) as string | null,
+      onDutyExpiresAt: (data.on_duty_expires_at ?? null) as string | null,
+      remainingDutySeconds: (data.remaining_duty_seconds ?? 0) as number,
     };
   } catch (error) {
+    if (error instanceof ApiError) {
+      return { error: error.message || 'Error updating availability status.' };
+    }
     console.error('Failed to update duty status:', error);
     return { error: 'Network error updating duty status.' };
   }
@@ -191,13 +181,8 @@ export async function updateDutyStatus(
 
 export async function dismissVerificationBanner(): Promise<boolean> {
   try {
-    const res = await fetch('/api/doctors/verification/dismiss', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    return res.ok;
+    await apiClient.post('/api/doctors/verification/dismiss');
+    return true;
   } catch (error) {
     console.error('Failed to dismiss verification banner:', error);
     return false;
@@ -205,36 +190,37 @@ export async function dismissVerificationBanner(): Promise<boolean> {
 }
 
 export async function getOverview(): Promise<Overview> {
-  const {
-    caseRequests = [],
-    cases = [],
-    summary: baseSummary = { earnings: 0, earningsChange: 0 },
-  } = overviewMock as Overview;
-
   const realStats = await fetchDoctorStatistics();
   const verif = await fetchVerificationStatus();
 
-  const newRequests = realStats ? realStats.pendingReviews : caseRequests.length;
-  const activeCases = realStats
-    ? realStats.acceptedCases
-    : cases.filter((c: Case) => c.status === 'Pending').length;
-  const completedCases = realStats
-    ? realStats.completedCases
-    : cases.filter((c: Case) => c.status === 'Completed').length;
-  const earnings = realStats ? realStats.earnings : baseSummary.earnings;
+  const isVerified = verif?.status === 'approved' || verif?.status === 'verified';
+
+  let newRequests = 0;
+  let activeCases = 0;
+  let completedCases = 0;
+  let earnings = 0;
+
+  if (isVerified && realStats) {
+    newRequests = realStats.pendingReviews ?? 0;
+    activeCases = realStats.acceptedCases ?? 0;
+    completedCases = realStats.completedCases ?? 0;
+    earnings = realStats.earnings ?? 0;
+  }
 
   const computed: Overview = {
-    ...overviewMock,
     verificationStatus: verif?.status ?? 'not_submitted',
     rejectionReason: verif?.rejectionReason ?? null,
-    showVerificationBanner: verif?.status !== 'approved',
+    showVerificationBanner: !isVerified,
     summary: {
       newRequests,
       activeCases,
       completedCases,
       earnings,
-      earningsChange: baseSummary.earningsChange,
+      earningsChange: undefined,
     },
+    currentCase: null,
+    caseRequests: [],
+    cases: [],
   };
 
   return computed;
