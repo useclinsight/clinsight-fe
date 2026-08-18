@@ -7,7 +7,12 @@ declare global {
 }
 
 const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com';
+// The Clinsight PostHog project is hosted in the EU region. Keep this
+// configurable so each deployment can use the host shown in Project Settings.
+const posthogHost = (process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://eu.i.posthog.com').replace(
+  /\/$/,
+  '',
+);
 const inMemoryAnalyticsIds = new Map<string, string>();
 
 function getOpaqueAnalyticsId(kind: 'lead' | 'user') {
@@ -37,34 +42,54 @@ function getOpaqueAnalyticsId(kind: 'lead' | 'user') {
   return id;
 }
 
-export function initializePostHog() {
-  if (!posthogKey || typeof window === 'undefined' || window.__clinsightPostHogInitialized) return;
+export function initializePostHog(): boolean {
+  if (!posthogKey || typeof window === 'undefined') return false;
+  if (window.__clinsightPostHogInitialized) return true;
 
   posthog.init(posthogKey, {
     api_host: posthogHost,
-    capture_pageview: true,
+    capture_pageview: false,
+    defaults: '2026-05-30',
     persistence: 'localStorage+cookie',
   });
   window.__clinsightPostHogInitialized = true;
+  return true;
+}
+
+export function capturePageView() {
+  if (!initializePostHog() || typeof window === 'undefined') return;
+
+  posthog.capture('$pageview', {
+    $current_url: window.location.href,
+  });
+}
+
+export function restoreIdentityFromUrl() {
+  if (!initializePostHog() || typeof window === 'undefined') return;
+
+  const distinctId = new URLSearchParams(window.location.search).get('distinct_id')?.trim();
+  if (!distinctId || distinctId.length > 200) return;
+
+  posthog.identify(distinctId);
 }
 
 export function identifyLead() {
-  if (!posthogKey || typeof window === 'undefined') return;
+  if (!initializePostHog() || typeof window === 'undefined') return;
   posthog.identify(getOpaqueAnalyticsId('lead'));
 }
 
 export function identifyUser(userId: string, properties?: Record<string, string>) {
-  if (!posthogKey) return;
+  if (!initializePostHog()) return;
   posthog.identify(userId, properties);
 }
 
 export function captureLead(source: 'guide' | 'waitlist') {
-  if (!posthogKey) return;
+  if (!initializePostHog()) return;
   posthog.capture('lead_captured', { source });
 }
 
 export function captureRegistration() {
-  if (!posthogKey || typeof window === 'undefined') return;
+  if (!initializePostHog() || typeof window === 'undefined') return;
   const userId = getOpaqueAnalyticsId('user');
   const previousId = posthog.get_distinct_id();
   posthog.identify(userId);
@@ -73,7 +98,11 @@ export function captureRegistration() {
 }
 
 export function captureGuestEvent(event: string, properties?: Record<string, string>) {
-  if (!posthogKey) return;
-  initializePostHog();
+  if (!initializePostHog()) return;
   posthog.capture(event, properties);
+}
+
+export function resetPostHog() {
+  if (!initializePostHog()) return;
+  posthog.reset();
 }
