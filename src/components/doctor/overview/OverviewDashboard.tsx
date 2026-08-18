@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import CurrentCase from './CurrentCase';
 import AvailableCases from './AvailableCases';
 import Summary from './Summary';
 import VerificationBanner, { VerificationStatus } from './VerificationBanner';
-import { Overview, CaseRequest, Case } from '@/services/doctor/service';
+import { Overview, CaseRequest, Case, fetchVerificationStatus } from '@/services/doctor/service';
 
 export default function OverviewDashboard({
   overview,
@@ -18,10 +18,39 @@ export default function OverviewDashboard({
   isError?: boolean;
   onRetry?: () => void;
 }) {
-  const [viewState] = useState<'populated' | 'empty' | 'no-current'>('populated');
+  const [currentStatus, setCurrentStatus] = useState<VerificationStatus>(
+    (overview?.verificationStatus as VerificationStatus) ?? 'not_submitted'
+  );
+  const [rejectionReason, setRejectionReason] = useState<string | null>(
+    overview?.rejectionReason ?? null
+  );
+  const [verifError, setVerifError] = useState<boolean>(false);
 
-  const verificationStatus: VerificationStatus =
-    (overview?.verificationStatus as VerificationStatus) ?? 'unsuccessful';
+  const isApproved = currentStatus === 'approved' || currentStatus === 'verified';
+
+  // Function to refresh verification status from API
+  const refreshStatus = useCallback(async () => {
+    setVerifError(false);
+    const res = await fetchVerificationStatus();
+    if (res) {
+      setCurrentStatus(res.status as VerificationStatus);
+      setRejectionReason(res.rejectionReason ?? null);
+    } else {
+      setVerifError(true);
+    }
+  }, []);
+
+  // Poll verification status while in pending / in_progress state
+  useEffect(() => {
+    if (currentStatus === 'pending' || currentStatus === 'in_progress') {
+      const interval = setInterval(() => {
+        refreshStatus();
+      }, 10000); // 10 seconds polling
+
+      return () => clearInterval(interval);
+    }
+  }, [currentStatus, refreshStatus]);
+
   const isDismissed = overview?.isVerificationDismissed ?? false;
   const showBanner = overview?.showVerificationBanner ?? !isDismissed;
 
@@ -42,16 +71,15 @@ export default function OverviewDashboard({
         }
       : null);
 
-  const displayCurrentCase =
-    viewState === 'empty' || viewState === 'no-current' ? null : currentCaseData;
-  const displayAvailableCases = viewState === 'empty' ? [] : casesList;
-
   return (
     <div className="flex flex-col gap-6 pt-2.5 pb-10 px-2.5 max-w-7xl mx-auto w-full">
       {/* Verification Status Banner */}
       {showBanner && (
         <VerificationBanner
-          status={verificationStatus}
+          status={currentStatus}
+          rejectionReason={rejectionReason}
+          isError={verifError}
+          onRetry={refreshStatus}
         />
       )}
 
@@ -63,11 +91,34 @@ export default function OverviewDashboard({
         onRetry={onRetry}
       />
 
-      {/* Current Case Section */}
-      <CurrentCase currentCase={displayCurrentCase} />
+      {/* Dashboard Sections Gated by Verification Status */}
+      {!isApproved ? (
+        <div className="relative rounded-2xl border border-dashed border-gray-300 bg-gray-50/50 p-6 md:p-10 text-center">
+          <div className="max-w-md mx-auto flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-blue-50 text-primary-blue flex items-center justify-center font-bold text-lg">
+              🔒
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Dashboard Content Gated
+            </h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Your account verification is currently{' '}
+              <span className="font-semibold capitalize text-gray-800">
+                {currentStatus.replace('_', ' ')}
+              </span>
+              . Once your medical credentials are approved, active case reviews and match requests will be unlocked.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Current Case Section */}
+          <CurrentCase currentCase={currentCaseData} />
 
-      {/* Available Cases Section */}
-      <AvailableCases cases={displayAvailableCases} badgeCount="10+" />
+          {/* Available Cases Section */}
+          <AvailableCases cases={casesList} badgeCount="10+" />
+        </>
+      )}
     </div>
   );
 }
