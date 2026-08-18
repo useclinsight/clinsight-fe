@@ -23,29 +23,37 @@ export function DoctorVerificationBanner() {
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
 
-  const loadStatus = useCallback(async () => {
-    setIsError(false);
-    const res = await fetchVerificationStatus();
+  const applyResult = useCallback((res: Awaited<ReturnType<typeof fetchVerificationStatus>>) => {
     if (res) {
       setStatus(res.status as VerificationStatus);
       setRejectionReason(res.rejectionReason ?? null);
+      setIsError(false);
     } else {
       setIsError(true);
     }
   }, []);
 
+  const handleRetry = useCallback(() => {
+    setIsError(false);
+    fetchVerificationStatus().then(applyResult);
+  }, [applyResult]);
+
   useEffect(() => {
-    loadStatus();
-  }, [loadStatus]);
+    let cancelled = false;
+    fetchVerificationStatus().then((res) => {
+      if (!cancelled) applyResult(res);
+    });
+    return () => { cancelled = true; };
+  }, [applyResult]);
 
   useEffect(() => {
     if (status === 'pending' || status === 'in_progress') {
       const interval = setInterval(() => {
-        loadStatus();
+        fetchVerificationStatus().then(applyResult);
       }, 10000);
       return () => clearInterval(interval);
     }
-  }, [status, loadStatus]);
+  }, [status, applyResult]);
 
   return (
     <div className="w-full max-w-7xl mx-auto px-2.5 pt-2 pb-2">
@@ -53,7 +61,7 @@ export function DoctorVerificationBanner() {
         status={status}
         rejectionReason={rejectionReason}
         isError={isError}
-        onRetry={loadStatus}
+        onRetry={handleRetry}
       />
     </div>
   );
