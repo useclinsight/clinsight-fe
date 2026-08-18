@@ -10,6 +10,8 @@ type DutyStatusToggleProps = {
   initialIsOnDuty?: boolean;
   dutyStatus?: DoctorDutyStatus;
   onStatusChange?: (status: DoctorDutyStatus) => void;
+  disabled?: boolean;
+  disabledReason?: string;
 };
 
 export default function DutyStatusToggle({
@@ -18,16 +20,20 @@ export default function DutyStatusToggle({
   initialIsOnDuty = false,
   dutyStatus: externalDutyStatus,
   onStatusChange,
+  disabled = false,
+  disabledReason,
 }: DutyStatusToggleProps) {
   const [internalIsOnDuty, setInternalIsOnDuty] = useState<boolean | null>(null);
   const [internalRemainingSeconds, setInternalRemainingSeconds] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const effectiveIsOnDuty = propIsOnDuty ?? internalIsOnDuty ?? externalDutyStatus?.isOnDuty ?? initialIsOnDuty;
-  const remainingSeconds = internalRemainingSeconds ?? externalDutyStatus?.remainingDutySeconds ?? 0;
+  const effectiveIsOnDuty =
+    propIsOnDuty ?? internalIsOnDuty ?? externalDutyStatus?.isOnDuty ?? initialIsOnDuty;
+  const remainingSeconds =
+    internalRemainingSeconds ?? externalDutyStatus?.remainingDutySeconds ?? 0;
 
-  // Countdown timer for 12-hour duty shift
+  // Countdown timer for shift duration if set
   useEffect(() => {
     if (!effectiveIsOnDuty || remainingSeconds <= 0) return;
 
@@ -52,8 +58,11 @@ export default function DutyStatusToggle({
   };
 
   const handleToggle = async () => {
-    if (effectiveIsOnDuty) {
-      setErrorMessage('Manual off-duty is disabled. Your shift automatically ends 12 hours after going on duty.');
+    if (disabled) {
+      setErrorMessage(
+        disabledReason ||
+          'Approval required: Your doctor verification must be approved before you can go on duty.',
+      );
       setTimeout(() => setErrorMessage(null), 4000);
       return;
     }
@@ -61,7 +70,8 @@ export default function DutyStatusToggle({
     setIsLoading(true);
     setErrorMessage(null);
 
-    const result = await updateDutyStatus(true);
+    const nextState = !effectiveIsOnDuty;
+    const result = await updateDutyStatus(nextState);
     setIsLoading(false);
 
     if ('error' in result) {
@@ -85,32 +95,50 @@ export default function DutyStatusToggle({
         type="button"
         role="switch"
         aria-checked={effectiveIsOnDuty}
-        aria-label={effectiveIsOnDuty ? 'On duty. Shift ends automatically after 12 hours.' : 'Off duty. Click to go on duty.'}
+        aria-label={
+          disabled
+            ? 'Toggle disabled. Verification required.'
+            : effectiveIsOnDuty
+              ? 'On duty. Click to go off duty.'
+              : 'Off duty. Click to go on duty.'
+        }
         onClick={handleToggle}
         disabled={isLoading}
         className={cn(
           'flex h-9 shrink-0 items-center justify-between gap-2 rounded-full border px-2 transition-all sm:w-auto sm:gap-3 sm:px-3.5 border-none outline-none cursor-pointer',
-          effectiveIsOnDuty ? 'bg-[#DEF6E7] hover:bg-[#D1FAE5]' : 'bg-[#EBEBEB] hover:bg-[#E0E0E0]',
-          isLoading && 'opacity-70 cursor-wait'
+          disabled
+            ? 'bg-[#E5E7EB] opacity-60 cursor-not-allowed'
+            : effectiveIsOnDuty
+              ? 'bg-[#DEF6E7] hover:bg-[#D1FAE5]'
+              : 'bg-[#EBEBEB] hover:bg-[#E0E0E0]',
+          isLoading && 'opacity-70 cursor-wait',
         )}
       >
         <div className="flex items-center gap-2">
           <span
             className={cn(
               'size-2 shrink-0 rounded-full',
-              effectiveIsOnDuty ? 'bg-[#147638] animate-pulse' : 'bg-text-secondary',
+              disabled
+                ? 'bg-gray-400'
+                : effectiveIsOnDuty
+                  ? 'bg-[#147638] animate-pulse'
+                  : 'bg-text-secondary',
             )}
           />
           <span
             className={cn(
               'whitespace-nowrap text-xs sm:text-sm font-medium',
-              effectiveIsOnDuty ? 'text-[#147638]' : 'text-text-secondary',
+              disabled
+                ? 'text-gray-500'
+                : effectiveIsOnDuty
+                  ? 'text-[#147638]'
+                  : 'text-text-secondary',
             )}
           >
             {effectiveIsOnDuty ? 'On duty' : 'Off duty'}
           </span>
 
-          {effectiveIsOnDuty && remainingSeconds > 0 && (
+          {effectiveIsOnDuty && remainingSeconds > 0 && !disabled && (
             <span className="text-[11px] font-mono text-[#147638]/80 bg-[#147638]/10 px-1.5 py-0.5 rounded ml-0.5">
               {formatCountdown(remainingSeconds)}
             </span>
@@ -120,13 +148,13 @@ export default function DutyStatusToggle({
         <span
           className={cn(
             'relative inline-flex h-4.5 w-8.5 shrink-0 rounded-full transition-colors ml-1',
-            effectiveIsOnDuty ? 'bg-primary-blue' : 'bg-[#B0B0B0]',
+            disabled ? 'bg-gray-300' : effectiveIsOnDuty ? 'bg-primary-blue' : 'bg-[#B0B0B0]',
           )}
         >
           <span
             className={cn(
               'absolute top-0.5 size-3.5 rounded-full bg-white transition-[left]',
-              effectiveIsOnDuty ? 'left-4.5' : 'left-0.5',
+              effectiveIsOnDuty && !disabled ? 'left-4.5' : 'left-0.5',
             )}
           />
         </span>

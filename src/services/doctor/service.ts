@@ -44,6 +44,21 @@ export interface DoctorDutyStatus {
   remainingDutySeconds: number;
 }
 
+export interface VerificationStatusResponse {
+  status:
+    | 'not_submitted'
+    | 'pending'
+    | 'approved'
+    | 'rejected'
+    | 'in_progress'
+    | 'unsuccessful'
+    | 'verified';
+  rejectionReason?: string | null;
+  licenseNumber?: string;
+  specialty?: string;
+  updatedAt?: string;
+}
+
 export interface Overview {
   summary: {
     newRequests: number;
@@ -59,6 +74,7 @@ export interface Overview {
   showVerificationBanner?: boolean;
   isVerificationDismissed?: boolean;
   verificationStatus?: string;
+  rejectionReason?: string | null;
 }
 
 export function formatLargeNumber(value: number): string {
@@ -69,6 +85,31 @@ export function formatLargeNumber(value: number): string {
     return `${(value / 1000).toFixed(1).replace(/\.0$/, '')}k`;
   }
   return value.toLocaleString();
+}
+
+export async function fetchVerificationStatus(): Promise<VerificationStatusResponse | null> {
+  try {
+    const res = await fetch('/api/doctors/verification/status', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const data = json.data || json || {};
+    return {
+      status: data.status ?? 'not_submitted',
+      rejectionReason: data.rejection_reason ?? data.rejectionReason ?? null,
+      licenseNumber: data.license_number,
+      specialty: data.specialty,
+      updatedAt: data.updated_at,
+    };
+  } catch (error) {
+    console.error('Failed to fetch verification status:', error);
+    return null;
+  }
 }
 
 export async function fetchDoctorStatistics(): Promise<DoctorStatistics | null> {
@@ -96,22 +137,48 @@ export async function fetchDoctorStatistics(): Promise<DoctorStatistics | null> 
   }
 }
 
-export async function updateDutyStatus(isOnDuty: boolean): Promise<DoctorDutyStatus | { error: string }> {
+export async function getAvailability(): Promise<DoctorDutyStatus | null> {
   try {
-    const res = await fetch('/api/doctors/duty-status', {
-      method: 'POST',
+    const res = await fetch('/api/doctors/availability', {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ is_on_duty: isOnDuty }),
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const data = json.data || {};
+    return {
+      isOnDuty: data.on_duty ?? data.is_on_duty ?? false,
+      onDutySince: data.on_duty_since ?? null,
+      onDutyExpiresAt: data.on_duty_expires_at ?? null,
+      remainingDutySeconds: data.remaining_duty_seconds ?? 0,
+    };
+  } catch (error) {
+    console.error('Failed to fetch availability:', error);
+    return null;
+  }
+}
+
+export async function updateDutyStatus(
+  isOnDuty: boolean,
+): Promise<DoctorDutyStatus | { error: string }> {
+  try {
+    const res = await fetch('/api/doctors/availability', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ on_duty: isOnDuty }),
     });
     const json = await res.json();
     if (!res.ok) {
-      return { error: json.detail || json.message || 'Manual off-duty is disabled.' };
+      return { error: json.detail || json.message || 'Error updating availability status.' };
     }
     const data = json.data || {};
     return {
-      isOnDuty: data.is_on_duty ?? false,
+      isOnDuty: data.on_duty ?? data.is_on_duty ?? false,
       onDutySince: data.on_duty_since ?? null,
       onDutyExpiresAt: data.on_duty_expires_at ?? null,
       remainingDutySeconds: data.remaining_duty_seconds ?? 0,
@@ -145,14 +212,22 @@ export async function getOverview(): Promise<Overview> {
   } = overviewMock as Overview;
 
   const realStats = await fetchDoctorStatistics();
+  const verif = await fetchVerificationStatus();
 
   const newRequests = realStats ? realStats.pendingReviews : caseRequests.length;
-  const activeCases = realStats ? realStats.acceptedCases : cases.filter((c: Case) => c.status === 'Pending').length;
-  const completedCases = realStats ? realStats.completedCases : cases.filter((c: Case) => c.status === 'Completed').length;
+  const activeCases = realStats
+    ? realStats.acceptedCases
+    : cases.filter((c: Case) => c.status === 'Pending').length;
+  const completedCases = realStats
+    ? realStats.completedCases
+    : cases.filter((c: Case) => c.status === 'Completed').length;
   const earnings = realStats ? realStats.earnings : baseSummary.earnings;
 
   const computed: Overview = {
     ...overviewMock,
+    verificationStatus: verif?.status ?? 'not_submitted',
+    rejectionReason: verif?.rejectionReason ?? null,
+    showVerificationBanner: verif?.status !== 'approved',
     summary: {
       newRequests,
       activeCases,

@@ -165,11 +165,7 @@ export const proxy: NextProxy = async (request) => {
     // If we just did a successful refresh, trust the new token directly —
     // calling validateSession again would race against the browser not yet
     // having the new cookie, causing a false-negative redirect to /login.
-    const isAuthenticated = didRefresh
-      ? true
-      : hasCookie
-        ? await validateSession(token!)
-        : false;
+    const isAuthenticated = didRefresh ? true : hasCookie ? await validateSession(token!) : false;
     console.log('isAuthenticated', isAuthenticated);
 
     if (isProtected && !isAuthenticated) {
