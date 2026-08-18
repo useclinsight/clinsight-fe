@@ -100,12 +100,13 @@ export default function CurrentCase({ currentCase }: { currentCase?: CurrentCase
           <div>
             <span className="text-xs text-[#6B7280] block mb-1">Priority</span>
             <span
-              className={`text-xs font-semibold px-3 py-1 rounded-full inline-block ${currentCase.priority === 'High'
-                ? 'bg-[#FEE2E2] text-[#DC2626]'
-                : currentCase.priority === 'Low'
-                  ? 'bg-[#DCFCE7] text-[#16A34A]'
-                  : 'bg-[#FEF3C7] text-[#D97706]'
-                }`}
+              className={`text-xs font-semibold px-3 py-1 rounded-full inline-block ${
+                currentCase.priority === 'High'
+                  ? 'bg-[#FEE2E2] text-[#DC2626]'
+                  : currentCase.priority === 'Low'
+                    ? 'bg-[#DCFCE7] text-[#16A34A]'
+                    : 'bg-[#FEF3C7] text-[#D97706]'
+              }`}
             >
               {currentCase.priority || 'Medium'}
             </span>

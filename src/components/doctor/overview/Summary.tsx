@@ -28,13 +28,28 @@ type SummaryCardProps = {
   isMissing?: boolean;
 };
 
-function SummaryCardSkeleton({ title, icon, iconBgClass, iconColor }: { title: string; icon: IconSvgElement; iconBgClass: string; iconColor: string }) {
+function SummaryCardSkeleton({
+  title,
+  icon,
+  iconBgClass,
+  iconColor,
+}: {
+  title: string;
+  icon: IconSvgElement;
+  iconBgClass: string;
+  iconColor: string;
+}) {
   return (
     <div className="rounded-xl border border-[#F0F0F0] bg-[#FFFFFE] p-4 lg:p-5 animate-pulse">
       <div className="flex flex-col gap-4">
         <div className="flex items-start justify-between gap-3">
           <span className="text-sm text-secondary-3">{title}</span>
-          <div className={cn('flex size-9 shrink-0 items-center justify-center rounded-lg', iconBgClass)}>
+          <div
+            className={cn(
+              'flex size-9 shrink-0 items-center justify-center rounded-lg',
+              iconBgClass,
+            )}
+          >
             <HugeiconsIcon icon={icon} size={20} color={iconColor} />
           </div>
         </div>
@@ -58,11 +73,23 @@ function SummaryCard({
   isMissing = false,
 }: SummaryCardProps) {
   if (isLoading) {
-    return <SummaryCardSkeleton title={title} icon={icon} iconBgClass={iconBgClass} iconColor={iconColor} />;
+    return (
+      <SummaryCardSkeleton
+        title={title}
+        icon={icon}
+        iconBgClass={iconBgClass}
+        iconColor={iconColor}
+      />
+    );
   }
 
   return (
-    <div className={cn('rounded-xl border border-[#F0F0F0] bg-[#FFFFFE] p-4 lg:p-5 transition-all', className)}>
+    <div
+      className={cn(
+        'rounded-xl border border-[#F0F0F0] bg-[#FFFFFE] p-4 lg:p-5 transition-all',
+        className,
+      )}
+    >
       <div className="flex flex-col gap-4">
         <div className="flex items-start justify-between gap-3">
           <span className="text-sm text-secondary-3">{title}</span>
@@ -110,7 +137,9 @@ export default function Summary({
         </div>
         <div>
           <h4 className="font-semibold text-gray-900">Failed to load statistics</h4>
-          <p className="text-xs text-gray-600 mt-1">We couldn&apos;t fetch your workload metrics. The rest of your dashboard remains active.</p>
+          <p className="text-xs text-gray-600 mt-1">
+            We couldn&apos;t fetch your workload metrics. The rest of your dashboard remains active.
+          </p>
         </div>
         {onRetry && (
           <button
@@ -132,19 +161,12 @@ export default function Summary({
   const earningsChange = overview?.summary?.earningsChange;
 
   const pendingReviews =
-    typeof pendingReviewsRaw === 'number'
-      ? formatLargeNumber(pendingReviewsRaw)
-      : '0';
+    typeof pendingReviewsRaw === 'number' ? formatLargeNumber(pendingReviewsRaw) : '0';
 
-  const acceptedCases =
-    typeof acceptedCasesRaw === 'number'
-      ? acceptedCasesRaw
-      : 0;
+  const acceptedCases = typeof acceptedCasesRaw === 'number' ? acceptedCasesRaw : 0;
 
   const completedCases =
-    typeof completedCasesRaw === 'number'
-      ? formatLargeNumber(completedCasesRaw)
-      : '0';
+    typeof completedCasesRaw === 'number' ? formatLargeNumber(completedCasesRaw) : '0';
 
   const formattedEarnings =
     typeof earningsRaw === 'number'

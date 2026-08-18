@@ -39,12 +39,7 @@ export default function OverviewDashboard({
   return (
     <div className="flex flex-col gap-6 pt-2.5 pb-10 px-2.5 max-w-7xl mx-auto w-full">
       {/* Summary Cards */}
-      <Summary
-        overview={overview}
-        isLoading={isLoading}
-        isError={isError}
-        onRetry={onRetry}
-      />
+      <Summary overview={overview} isLoading={isLoading} isError={isError} onRetry={onRetry} />
 
       {/* Dashboard Sections Gated by Verification Status */}
       {!isApproved ? (
@@ -53,15 +48,14 @@ export default function OverviewDashboard({
             <div className="w-12 h-12 rounded-full bg-blue-50 text-primary-blue flex items-center justify-center font-bold text-lg">
               🔒
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Dashboard Content Gated
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">Dashboard Content Gated</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
               Your account verification is currently{' '}
               <span className="font-semibold capitalize text-gray-800">
                 {currentStatus.replace('_', ' ')}
               </span>
-              . Once your medical credentials are approved, active case reviews and match requests will be unlocked.
+              . Once your medical credentials are approved, active case reviews and match requests
+              will be unlocked.
             </p>
           </div>
         </div>

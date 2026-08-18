@@ -45,7 +45,14 @@ export interface DoctorDutyStatus {
 }
 
 export interface VerificationStatusResponse {
-  status: 'not_submitted' | 'pending' | 'approved' | 'rejected' | 'in_progress' | 'unsuccessful' | 'verified';
+  status:
+    | 'not_submitted'
+    | 'pending'
+    | 'approved'
+    | 'rejected'
+    | 'in_progress'
+    | 'unsuccessful'
+    | 'verified';
   rejectionReason?: string | null;
   licenseNumber?: string;
   specialty?: string;
@@ -154,7 +161,9 @@ export async function getAvailability(): Promise<DoctorDutyStatus | null> {
   }
 }
 
-export async function updateDutyStatus(isOnDuty: boolean): Promise<DoctorDutyStatus | { error: string }> {
+export async function updateDutyStatus(
+  isOnDuty: boolean,
+): Promise<DoctorDutyStatus | { error: string }> {
   try {
     const res = await fetch('/api/doctors/availability', {
       method: 'PATCH',
@@ -206,8 +215,12 @@ export async function getOverview(): Promise<Overview> {
   const verif = await fetchVerificationStatus();
 
   const newRequests = realStats ? realStats.pendingReviews : caseRequests.length;
-  const activeCases = realStats ? realStats.acceptedCases : cases.filter((c: Case) => c.status === 'Pending').length;
-  const completedCases = realStats ? realStats.completedCases : cases.filter((c: Case) => c.status === 'Completed').length;
+  const activeCases = realStats
+    ? realStats.acceptedCases
+    : cases.filter((c: Case) => c.status === 'Pending').length;
+  const completedCases = realStats
+    ? realStats.completedCases
+    : cases.filter((c: Case) => c.status === 'Completed').length;
   const earnings = realStats ? realStats.earnings : baseSummary.earnings;
 
   const computed: Overview = {
