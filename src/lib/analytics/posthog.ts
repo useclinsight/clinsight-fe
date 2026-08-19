@@ -28,6 +28,16 @@ function canTrackCurrentRoute() {
   return typeof window !== 'undefined' && !isExcludedPath(window.location.pathname);
 }
 
+function sanitizeUrl(value: string) {
+  try {
+    const url = new URL(value, window.location.origin);
+    url.searchParams.delete('distinct_id');
+    return url.toString();
+  } catch {
+    return value;
+  }
+}
+
 function filterExcludedRouteEvents(capture: CaptureResult | null) {
   if (!capture) return capture;
   if (typeof window !== 'undefined' && isExcludedPath(window.location.pathname)) return null;
@@ -39,6 +49,7 @@ function filterExcludedRouteEvents(capture: CaptureResult | null) {
     } catch {
       // Keep events with malformed custom URLs unchanged.
     }
+    capture.properties.$current_url = sanitizeUrl(currentUrl);
   }
 
   return capture;
@@ -77,27 +88,13 @@ export function initializePostHog(): boolean {
 
   posthog.init(posthogKey, {
     api_host: posthogHost,
-    capture_pageview: false,
+    capture_pageview: 'history_change',
     defaults: '2026-05-30',
     persistence: 'localStorage+cookie',
     before_send: filterExcludedRouteEvents,
   });
   window.__clinsightPostHogInitialized = true;
   return true;
-}
-
-export function capturePageView() {
-  if (!initializePostHog() || !canTrackCurrentRoute()) return;
-
-  const currentUrl = new URL(window.location.href);
-  if (currentUrl.searchParams.has('distinct_id')) {
-    currentUrl.searchParams.delete('distinct_id');
-    window.history.replaceState(window.history.state, '', currentUrl);
-  }
-
-  posthog.capture('$pageview', {
-    $current_url: currentUrl.toString(),
-  });
 }
 
 export function restoreIdentityFromUrl() {
@@ -107,6 +104,10 @@ export function restoreIdentityFromUrl() {
   if (!distinctId || distinctId.length > 200) return;
 
   posthog.identify(distinctId);
+
+  const sanitizedUrl = new URL(window.location.href);
+  sanitizedUrl.searchParams.delete('distinct_id');
+  window.history.replaceState(window.history.state, '', sanitizedUrl);
 }
 
 export function identifyLead() {

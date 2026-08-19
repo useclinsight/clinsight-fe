@@ -3,11 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { trackPageView } from '@/lib/analytics/pixel';
-import {
-  capturePageView,
-  initializePostHog,
-  restoreIdentityFromUrl,
-} from '@/lib/analytics/posthog';
+import { initializePostHog, restoreIdentityFromUrl } from '@/lib/analytics/posthog';
 
 function shouldTrackPostHog(pathname: string | null) {
   if (!pathname) return false;
@@ -29,11 +25,6 @@ export function AnalyticsProvider({ children }: Readonly<{ children: React.React
     if (!shouldTrackPostHog(pathname)) return;
     initializePostHog();
     restoreIdentityFromUrl();
-  }, [pathname, searchParamsKey]);
-
-  useEffect(() => {
-    if (!shouldTrackPostHog(pathname)) return;
-    capturePageView();
   }, [pathname, searchParamsKey]);
 
   useEffect(() => {
