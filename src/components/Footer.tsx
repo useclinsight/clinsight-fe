@@ -23,6 +23,10 @@ const FOOTER_LINKS = {
 
 export function Footer() {
   const pathname = usePathname();
+  const isResourcePage = pathname === '/squeeze' || pathname.startsWith('/resources/');
+  const legalLinks = isResourcePage
+    ? FOOTER_LINKS.legal.filter((link) => link.href !== '/delete-account')
+    : FOOTER_LINKS.legal;
 
   const hideOnRoutes = [
     '/waitlist',
@@ -87,41 +91,49 @@ export function Footer() {
           <div className="border-t border-white/10 w-full lg:hidden" />
 
           {/* Right: Links Grid (3 Columns) - 40px gap */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 lg:gap-10 w-full lg:w-auto">
-            <div className="flex flex-col gap-4 lg:gap-6">
-              <h4 className="text-sm font-bold uppercase tracking-wider">Platform</h4>
-              <ul className="flex flex-col gap-3 lg:gap-6">
-                {FOOTER_LINKS.platform.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-sm opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="flex flex-col gap-4 lg:gap-6">
-              <h4 className="text-sm font-bold uppercase tracking-wider">Company</h4>
-              <ul className="flex flex-col gap-3 lg:gap-6">
-                {FOOTER_LINKS.company.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-sm opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div
+            className={`grid grid-cols-1 gap-10 lg:gap-10 w-full lg:w-auto ${
+              isResourcePage ? '' : 'sm:grid-cols-3'
+            }`}
+          >
+            {!isResourcePage && (
+              <>
+                <div className="flex flex-col gap-4 lg:gap-6">
+                  <h4 className="text-sm font-bold uppercase tracking-wider">Platform</h4>
+                  <ul className="flex flex-col gap-3 lg:gap-6">
+                    {FOOTER_LINKS.platform.map((link) => (
+                      <li key={link.name}>
+                        <Link
+                          href={link.href}
+                          className="text-sm opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="flex flex-col gap-4 lg:gap-6">
+                  <h4 className="text-sm font-bold uppercase tracking-wider">Company</h4>
+                  <ul className="flex flex-col gap-3 lg:gap-6">
+                    {FOOTER_LINKS.company.map((link) => (
+                      <li key={link.name}>
+                        <Link
+                          href={link.href}
+                          className="text-sm opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
             <div className="flex flex-col gap-4 lg:gap-6">
               <h4 className="text-sm font-bold uppercase tracking-wider">Legal</h4>
               <ul className="flex flex-col gap-3 lg:gap-6">
-                {FOOTER_LINKS.legal.map((link) => (
+                {legalLinks.map((link) => (
                   <li key={link.name}>
                     <Link
                       href={link.href}

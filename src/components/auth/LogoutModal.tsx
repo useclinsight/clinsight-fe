@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { resetPostHog } from '@/lib/analytics/posthog';
 
 type LogoutStep = 'confirm' | 'loading';
 
@@ -53,6 +54,7 @@ export default function LogoutModal({ onClose }: LogoutModalProps) {
     }
 
     // 4. Redirect — back navigation disabled via replace
+    resetPostHog();
     router.replace('/login');
   };
 

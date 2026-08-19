@@ -9,6 +9,7 @@ import { ComingSoonProvider } from '@/components/coming-soon';
 import { Toaster } from '@/components/ui/sonner';
 import { AnalyticsProvider } from '@/providers/AnalyticsProvider';
 import { getPublicSiteUrl } from '@/lib/site-url';
+import { Suspense } from 'react';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -81,14 +82,25 @@ export default function RootLayout({
             />
           </>
         )}
-        <AnalyticsProvider>
-          <ComingSoonProvider>
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-            <Toaster />
-          </ComingSoonProvider>
-        </AnalyticsProvider>
+        <Suspense
+          fallback={
+            <ComingSoonProvider>
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+              <Toaster />
+            </ComingSoonProvider>
+          }
+        >
+          <AnalyticsProvider>
+            <ComingSoonProvider>
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+              <Toaster />
+            </ComingSoonProvider>
+          </AnalyticsProvider>
+        </Suspense>
       </body>
     </html>
   );
