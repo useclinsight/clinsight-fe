@@ -18,55 +18,51 @@ jobs:
     uses: ./.github/workflows/ci.yml
 
   deploy-staging:
-    name: Deploy Staging
+    name: Deploy Preview (Staging)
     needs: validate
     if: github.ref_name == 'staging'
     runs-on: ubuntu-latest
     environment: staging
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
-      - name: Deploy to staging server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -euo pipefail
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-            cd /home/device_clinical_support/clinical-ui
-            git fetch origin
-            git checkout staging
-            git reset --hard ${{ github.sha }}
-            corepack enable
-            corepack prepare pnpm@11.1.2 --activate
-            pnpm install --frozen-lockfile
-            SKIP_ENV_VALIDATION=1 pnpm build
-            pm2 restart staging-fe --update-env
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
 
   deploy-production:
-    name: Deploy Production
+    name: Deploy Production (Main)
     needs: validate
     if: github.ref_name == 'main'
     runs-on: ubuntu-latest
     environment: production
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
-      - name: Deploy to production server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -euo pipefail
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-            cd /home/device_clinical_support/clinical-ui-prod
-            git fetch origin
-            git checkout main
-            git reset --hard ${{ github.sha }}
-            corepack enable
-            corepack prepare pnpm@11.1.2 --activate
-            pnpm install --frozen-lockfile
-            SKIP_ENV_VALIDATION=1 pnpm build
-            pm2 restart production-fe --update-env
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

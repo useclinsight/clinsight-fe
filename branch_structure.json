@@ -1,0 +1,30 @@
+{
+  "default_branch": "dev",
+  "branches": [
+    "chore/update-cd",
+    "dev",
+    "feat/monorepo-migration",
+    "feat/posthog-integration-and-squeeze-footer",
+    "main",
+    "origin",
+    "staging"
+  ],
+  "parent": {
+    "chore/update-cd": "dev",
+    "dev": null,
+    "feat/monorepo-migration": "dev",
+    "feat/posthog-integration-and-squeeze-footer": "dev",
+    "main": "dev",
+    "origin": "dev",
+    "staging": "dev"
+  },
+  "order": [
+    "dev",
+    "chore/update-cd",
+    "feat/monorepo-migration",
+    "feat/posthog-integration-and-squeeze-footer",
+    "main",
+    "origin",
+    "staging"
+  ]
+}
