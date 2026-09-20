@@ -1,0 +1,72 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    uses: ./.github/workflows/ci.yml
+
+  deploy-staging:
+    name: Deploy Staging
+    needs: validate
+    if: github.ref_name == 'staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Deploy to staging server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            cd /home/device_clinical_support/clinical-ui
+            git fetch origin
+            git checkout staging
+            git reset --hard ${{ github.sha }}
+            corepack enable
+            corepack prepare pnpm@11.1.2 --activate
+            pnpm install --frozen-lockfile
+            SKIP_ENV_VALIDATION=1 pnpm build
+            pm2 restart staging-fe --update-env
+
+  deploy-production:
+    name: Deploy Production
+    needs: validate
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            cd /home/device_clinical_support/clinical-ui-prod
+            git fetch origin
+            git checkout main
+            git reset --hard ${{ github.sha }}
+            corepack enable
+            corepack prepare pnpm@11.1.2 --activate
+            pnpm install --frozen-lockfile
+            SKIP_ENV_VALIDATION=1 pnpm build
+            pm2 restart production-fe --update-env
