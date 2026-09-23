@@ -4,58 +4,58 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 @AGENTS.md
 
+## Monorepo Architecture
+
+This repository is organized as a Turborepo + pnpm workspaces monorepo:
+
+### Applications (`apps/`)
+
+| App           | Package Name        | Port | Description                                                                                                  |
+| ------------- | ------------------- | ---- | ------------------------------------------------------------------------------------------------------------ |
+| `apps/web`    | `@clinsight/web`    | 3000 | Public marketing & landing site (`/`, `/about`, `/contact`, `/waitlist`, `/how-it-works`, `/squeeze`, legal) |
+| `apps/doctor` | `@clinsight/doctor` | 3001 | Doctor portal (`/user` dashboard, `/case` reviews, `/earnings`, `/messages`, `/verification`, auth)          |
+| `apps/user`   | `@clinsight/user`   | 3002 | Patient / user dashboard (`/` overview, `/consultations`, `/records`, `/messages`, `/settings`, auth)        |
+| `apps/admin`  | `@clinsight/admin`  | 3003 | Admin portal (`/` metrics, `/verifications` credential queue, `/doctors`, `/users`, `/settings`)             |
+
+### Shared Packages (`packages/`)
+
+| Package           | Name                | Description                                                                      |
+| ----------------- | ------------------- | -------------------------------------------------------------------------------- |
+| `packages/ui`     | `@clinsight/ui`     | Shared UI primitives (Button, Input, Card, Badge, Table, Avatar, Sonner toaster) |
+| `packages/lib`    | `@clinsight/lib`    | Shared utilities (`cn`, isomorphic `apiClient`, auth & session helpers)          |
+| `packages/types`  | `@clinsight/types`  | Shared TypeScript interfaces (Auth, Doctor, User, Admin, Editor)                 |
+| `packages/config` | `@clinsight/config` | Shared TypeScript base configuration                                             |
+
 ## Commands
 
 ```bash
-pnpm dev          # start dev server
-pnpm build        # production build
-pnpm typecheck    # tsc --noEmit
-pnpm lint         # eslint
-pnpm format       # prettier --write src/
+# Monorepo-wide commands (via Turborepo)
+pnpm dev              # start all apps in development
+pnpm build            # build all apps and packages
+pnpm typecheck        # typecheck all apps and packages (or `make test`)
+make test             # verify test/typecheck across repository
+pnpm lint             # run linters across workspace
+pnpm format           # prettier format across repository
+
+# Run individual apps
+pnpm dev:web          # run marketing website (port 3000)
+pnpm dev:doctor       # run doctor portal (port 3001)
+pnpm dev:user         # run patient portal (port 3002)
+pnpm dev:admin        # run admin portal (port 3003)
+
+# Build individual apps
+pnpm build:web
+pnpm build:doctor
+pnpm build:user
+pnpm build:admin
 ```
 
 Package manager is **pnpm** (v11). Do not use npm or yarn.
 
 ## Next.js Version Warning
 
-This project uses **Next.js 16.2.6** with React 19. APIs differ from Next.js 13–15 in breaking ways. Key differences observed in this codebase:
+This project uses **Next.js 16.2.6** with React 19.
 
-- Middleware is implemented via `src/proxy.ts` exporting a `NextProxy` (imported from `next/server`) — **not** the conventional `middleware.ts` with `NextRequest/NextResponse` pattern.
-- Before adding any Next.js-specific code (middleware, route handlers, metadata, caching), read the relevant guide in `node_modules/next/dist/docs/`.
-
-## Architecture
-
-### Route Groups
-
-`src/app/` uses Next.js route groups to segment layouts:
-
-| Group        | Path prefix                                                                                   | Purpose                              |
-| ------------ | --------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `(external)` | `/`, `/about`, `/contact`, `/how-it-works`, `/waitlist`                                       | Public marketing pages               |
-| `(auth)`     | `/signin`, `/signup`, `/verify-otp`, `/forgot-password`, `/reset-password`, `/verification/*` | Authentication and doctor onboarding |
-| `(legal)`    | `/privacy-policy`, `/terms-and-conditions`                                                    | Legal content pages                  |
-
-The **root layout** (`src/app/layout.tsx`) wraps all groups with `<Header>`, `<Footer>`, and `<Toaster>`. Auth pages use fixed/absolute positioning to create full-screen layouts on top of this.
-
-The `(auth)/verification/` sub-group has its own layout that adds `<VerificationNavbar>` and a stepped onboarding UI (professional-info → credentials-verification → verification-complete).
-
-### Server Actions vs API Routes
-
-Backend communication is split:
-
-- **`src/actions/`** — Server Actions (`'use server'`) for auth flows (signup, signin, verify OTP, resend OTP, password reset). These call the external staging API directly: `https://api.staging.useclinsight.com/api/v1/`.
-- **`src/app/api/`** — Next.js Route Handlers used for internal/proxy endpoints (health check, waitlist, auth sub-routes like `/api/auth/verify-otp`).
-
-### Form Pattern
-
-All forms use **React Hook Form** + **Zod** via `@hookform/resolvers/zod`. Schemas are colocated in `src/schemas/` or inline in the component file. Server Actions are called from `onSubmit` handlers; results surface via `sonner` toasts.
-
-### Styling
-
-Tailwind CSS v4 with a custom theme defined in `src/app/globals.css` under `@theme`. Key custom tokens: `--color-primary-blue: #1565c0`, `--color-brand-blue: #1565c0`. Use the `cn()` helper from `src/lib/utils.ts` (clsx + tailwind-merge) for conditional classes.
-
-Icons come from `@hugeicons/react` (`HugeiconsIcon`) with icon definitions imported from `@hugeicons/core-free-icons`.
-
-UI primitives are shadcn/ui components in `src/components/ui/`.
-
-All API URLs fall back to `https://api.staging.useclinsight.com/api/v1/auth/*` if unset.
+- In `apps/doctor`, middleware uses `src/proxy.ts` exporting a `NextProxy` (imported from `next/server`).
+- Forms use React Hook Form + Zod via `@hookform/resolvers/zod`.
+- Tailwind CSS v4 is configured across all apps.
