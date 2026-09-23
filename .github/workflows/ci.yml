@@ -55,5 +55,5 @@ jobs:
 
       - name: Build application
         env:
-          SKIP_ENV_VALIDATION: "1"
+          SKIP_ENV_VALIDATION: '1'
         run: pnpm build
