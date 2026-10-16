@@ -41,7 +41,7 @@ export function MedicalProfessional() {
               </p>
             </div>
 
-            <Link href="/signup">
+            <Link href="/waitlist">
               <Button
                 className="w-fit h-[42px] lg:h-[48px] rounded-[12px] 
               bg-[#1565C0] px-4 lg:px-6 py-2 lg:py-3 text-[13px] lg:text-sm font-bold 

@@ -2,7 +2,7 @@ export const BUSINESS_REACH = [
   {
     icon: '/assets/contact-assets/mail-01.svg',
     type: 'Email',
-    info: 'hello@clinsight.com',
+    info: 'support@clinsight.com',
   },
   {
     icon: '/assets/contact-assets/call-02.svg',

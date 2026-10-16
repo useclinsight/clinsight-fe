@@ -40,7 +40,7 @@ export function Hero() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex-[1.4] flex flex-col items-start gap-6"
+            className="flex-[1.4] flex flex-col items-center gap-6 text-center lg:items-start lg:text-left"
           >
             <motion.div
               variants={fadeInUp}
@@ -109,9 +109,9 @@ export function Hero() {
           </motion.div>
 
           {/* Right Column */}
-          <div className="relative w-full flex-1 min-h-[400px] lg:min-h-[600px] flex items-center justify-end -mr-6 lg:mr-0 -mt-8 lg:mt-0">
+          <div className="relative w-full flex-1 min-h-[400px] lg:min-h-[600px] flex items-center justify-center lg:justify-end -mt-8 lg:mt-0">
             {/* Circle Wrapper */}
-            <div className="relative h-[320px] w-[320px] lg:h-[600px] lg:w-[600px] flex items-center justify-center scale-90 sm:scale-100 lg:scale-100 translate-x-6 lg:translate-x-0">
+            <div className="relative h-[320px] w-[320px] lg:h-[600px] lg:w-[600px] flex items-center justify-center scale-90 sm:scale-100 lg:scale-100 translate-x-0">
               {/* Background Circle Asset */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
