@@ -24,6 +24,15 @@ const FOOTER_LINKS = {
 export function Footer() {
   const pathname = usePathname();
   const isResourcePage = pathname === '/squeeze' || pathname.startsWith('/resources/');
+  const isActiveLink = (href: string) =>
+    pathname === href || (href !== '/' && pathname.startsWith(`${href}/`));
+  const footerLinkClassName = (href: string) => {
+    const isActive = isActiveLink(href);
+
+    return `text-sm transition-opacity cursor-pointer hover:opacity-100 ${
+      isActive ? 'font-semibold opacity-100 underline underline-offset-4' : 'opacity-70'
+    }`;
+  };
   const legalLinks = isResourcePage
     ? FOOTER_LINKS.legal.filter((link) => link.href !== '/delete-account')
     : FOOTER_LINKS.legal;
@@ -105,7 +114,8 @@ export function Footer() {
                       <li key={link.name}>
                         <Link
                           href={link.href}
-                          className="text-sm opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+                          aria-current={isActiveLink(link.href) ? 'page' : undefined}
+                          className={footerLinkClassName(link.href)}
                         >
                           {link.name}
                         </Link>
@@ -120,7 +130,8 @@ export function Footer() {
                       <li key={link.name}>
                         <Link
                           href={link.href}
-                          className="text-sm opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+                          aria-current={isActiveLink(link.href) ? 'page' : undefined}
+                          className={footerLinkClassName(link.href)}
                         >
                           {link.name}
                         </Link>
@@ -137,7 +148,8 @@ export function Footer() {
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-sm opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+                      aria-current={isActiveLink(link.href) ? 'page' : undefined}
+                      className={footerLinkClassName(link.href)}
                     >
                       {link.name}
                     </Link>
