@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowRight02Icon, ArrowDown01Icon } from '@hugeicons/core-free-icons';
@@ -21,15 +22,14 @@ export default function CaseScreen({ caseData }: { caseData: CaseDetail }) {
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 bg-[#F9FAFB] min-h-screen font-['Inter']">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-[#727783] mb-2">
-        <span
-          onClick={() => router.push('/user/case')}
-          className="cursor-pointer hover:text-primary-blue transition-colors"
-        >
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-[#727783] mb-2">
+        <Link href="/user/case" className="hover:text-primary-blue transition-colors">
           Active Cases
+        </Link>
+        <HugeiconsIcon icon={ArrowRight02Icon} size={14} aria-hidden="true" />
+        <span aria-current="page" className="text-[#1B1B1B] font-medium">
+          Case Detail
         </span>
-        <HugeiconsIcon icon={ArrowRight02Icon} size={14} />
-        <span className="text-[#1B1B1B] font-medium">Case Detail</span>
       </nav>
 
       {/* Header Section */}
@@ -42,7 +42,8 @@ export default function CaseScreen({ caseData }: { caseData: CaseDetail }) {
             <HugeiconsIcon
               icon={ArrowDown01Icon}
               size={24}
-              className="text-[#1B1B1B] cursor-pointer"
+              className="text-[#1B1B1B]"
+              aria-hidden="true"
             />
           </div>
           <div className="flex flex-wrap items-center gap-4 text-[#727783] text-sm">
@@ -53,7 +54,7 @@ export default function CaseScreen({ caseData }: { caseData: CaseDetail }) {
                 width={16}
                 height={16}
               />
-              <span>Case ID: #CR-7721</span>
+              <span>Case ID: {caseData.id}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Image
@@ -67,7 +68,11 @@ export default function CaseScreen({ caseData }: { caseData: CaseDetail }) {
           </div>
         </div>
 
-        <button className="bg-primary-blue text-white px-6 py-3 rounded-xl font-bold text-sm md:text-base hover:bg-blue-700 transition-all shadow-[0px_4px_12px_rgba(21,101,192,0.2)] whitespace-nowrap">
+        <button
+          type="button"
+          onClick={() => router.push(`/user/case/${caseData.id}/diagnostic-review`)}
+          className="bg-primary-blue text-white px-6 py-3 rounded-xl font-bold text-sm md:text-base hover:bg-blue-700 transition-all shadow-[0px_4px_12px_rgba(21,101,192,0.2)] whitespace-nowrap"
+        >
           Begin Diagnostic Review
         </button>
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { CaseInfoPanel } from '@/components/doctor/case/diagnostic-review/case-info-panel';
 import { ReportEditor } from '@/components/doctor/case/diagnostic-review/report-editor';
 
@@ -9,24 +9,24 @@ interface DiagnosticReviewScreenProps {
 }
 
 export default function DiagnosticReviewScreen({ caseId }: DiagnosticReviewScreenProps) {
-  const router = useRouter();
-
   return (
     <div className="w-full min-h-screen flex flex-col px-4 md:px-8 pt-6 pb-8 bg-[#FAFAFA] box-border">
       <nav
         aria-label="breadcrumb"
         className="flex items-center gap-2 text-sm font-['Inter'] mb-5 select-none shrink-0"
       >
-        <span
-          onClick={() => router.back()}
-          className="text-[#767676] hover:text-primary-blue cursor-pointer transition-colors"
+        <Link
+          href={`/user/case/${caseId}`}
+          className="text-[#767676] hover:text-primary-blue transition-colors"
         >
           Case Detail
-        </span>
+        </Link>
         <span className="text-[#767676]" aria-hidden="true">
           ›
         </span>
-        <span className="text-[#1B1B1B] font-medium">Diagnostic Review</span>
+        <span aria-current="page" className="text-[#1B1B1B] font-medium">
+          Diagnostic Review
+        </span>
       </nav>
 
       <div className="flex flex-col lg:flex-row gap-6 items-stretch w-full flex-1 min-h-0">
