@@ -31,7 +31,7 @@ export default function DiagnosticReviewScreen({ caseId }: DiagnosticReviewScree
 
       <div className="flex flex-col lg:flex-row gap-6 items-stretch w-full flex-1 min-h-0">
         <div className="w-full lg:w-[380px] flex shrink-0">
-          <CaseInfoPanel caseId={caseId} />
+          <CaseInfoPanel />
         </div>
         <div className="flex-1 flex min-w-0">
           <ReportEditor caseId={caseId} />

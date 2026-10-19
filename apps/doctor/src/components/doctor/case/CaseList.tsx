@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, FolderOpen, Search, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Search, SlidersHorizontal } from 'lucide-react';
 import { Case } from '@/services/doctor';
 
 const PAGE_SIZE = 10;
@@ -33,19 +33,23 @@ function EmptyCases({
       className={`flex flex-col items-center justify-center px-5 text-center ${filtered ? 'min-h-[350px]' : 'min-h-[65vh]'}`}
     >
       <div
-        className={`flex flex-col items-center bg-white ${filtered ? '' : 'max-w-[360px] rounded-2xl border border-[#F0F0F0] px-6 py-8'}`}
+        className={`flex flex-col items-center gap-[14px] bg-white px-6 pb-14 pt-12 ${filtered ? '' : 'rounded-[20px] border border-[#F0F0F0]'}`}
       >
-        <span className="flex size-14 items-center justify-center rounded-full bg-[#ECF2FF] text-[#2866E6]">
-          <FolderOpen size={29} strokeWidth={1.8} aria-hidden="true" />
+        <span className="relative size-20 shrink-0 rounded-full bg-[#EFF4FF]" aria-hidden="true">
+          <span className="absolute left-[18px] top-[21px] h-2 w-[18px] rounded-[3px] bg-[#BDD1FE]" />
+          <span className="absolute left-[18px] top-[28px] h-8 w-11 rounded-[5px] bg-[#BDD1FE]" />
+          <span className="absolute left-[18px] top-[36px] h-[22px] w-11 rounded-[5px] bg-[#2563EB]/85" />
         </span>
-        <h2 className="mt-3 text-base font-medium text-[#1B1B1B]">
+        <h2 className="text-xl font-medium text-[#1B1B1B]">
           {filtered
             ? query
               ? 'No matching cases found'
               : 'No cases match your filters'
             : 'No Available Cases'}
         </h2>
-        <p className="mt-1 max-w-[310px] text-sm leading-5 text-[#5E5E5E]">
+        <p
+          className={`text-sm leading-[1.5] text-[#494949] ${query ? 'max-w-[364px]' : filtered ? 'max-w-[314px]' : 'max-w-[460px]'}`}
+        >
           {filtered
             ? query
               ? "We couldn't find any cases matching your search. Try a different patient name, case ID, or keyword."
@@ -56,7 +60,7 @@ function EmptyCases({
           <button
             type="button"
             onClick={onClear}
-            className="mt-4 rounded-lg bg-primary-blue px-4 py-2 text-sm font-medium text-white"
+            className="mt-4 h-[52px] rounded-[10px] bg-primary-blue px-6 text-base font-medium text-white"
           >
             Clear Filters
           </button>

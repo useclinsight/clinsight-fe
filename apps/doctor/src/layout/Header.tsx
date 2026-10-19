@@ -47,7 +47,9 @@ function UserHeader({
   return (
     <header className="min-h-18 sm:min-h-23 w-full bg-[#FFFFFE] border border-l-0 border-[#F0F0F0] p-4 lg:px-10 md:px-6 sm:py-6.25 flex justify-between items-center gap-5 sm:gap-2.5 sm:flex-row">
       <div className="hidden sm:block">
-        <h1 className="sm:text-2xl lg:text-[32px] font-semibold">
+        <h1
+          className={`font-semibold ${isEarningsPage ? 'text-2xl' : 'sm:text-2xl lg:text-[32px]'}`}
+        >
           {isEarningsPage ? 'Earnings' : `Welcome ${doctorName ? `Dr. ${doctorName}` : 'Doctor'}`}
         </h1>
         {isEarningsPage && (
