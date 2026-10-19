@@ -320,21 +320,34 @@ export default function LoginContent() {
         {/* Left — hero image (desktop only) */}
         <div className="relative hidden shrink-0 lg:block lg:w-[45%]">
           <Image
-            src="/assets/login-page-assets/young_black_female_doctor.png"
+            src="/assets/login-page-assets/young_black_female_doctor_clean.png"
             alt="Doctor smiling in a white coat"
             fill
-            className="object-cover object-center"
-            priority
+            sizes="(min-width: 1024px) 45vw, 0px"
+            className="object-fill"
+            loading="eager"
+            fetchPriority="high"
           />
 
-          <div className="absolute left-10 top-10 z-10 h-9.75 w-38.5">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage:
+                'linear-gradient(141.36deg, rgba(0, 0, 0, 0.9) 1.88%, rgba(101, 101, 101, 0.007) 46.53%, rgba(102, 102, 102, 0) 92.84%)',
+            }}
+          />
+
+          <div className="absolute left-10 top-6 z-10 flex items-center gap-1 text-white">
             <Image
-              src="/assets/signup-page-assets/auth-logo.svg"
-              alt="Clinsight"
-              fill
-              className="object-contain"
-              priority
+              src="/assets/login-page-assets/doctor-logo-mark.svg"
+              alt=""
+              width={33}
+              height={41}
             />
+            <span className="font-sans text-[20px] font-normal leading-none tracking-[-0.4px]">
+              Clinsight
+            </span>
           </div>
         </div>
 
