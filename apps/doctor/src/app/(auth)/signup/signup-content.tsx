@@ -34,7 +34,7 @@ export default function SignupContent() {
 
       {/* Right panel - Form (Full width on mobile, right side on desktop) */}
       <div className="flex-1 h-screen overflow-y-auto px-4 sm:px-12 md:px-20 lg:px-0 bg-white">
-        <div className="w-full max-w-[519px] mx-auto pt-6 lg:pt-[36px] pb-6">
+        <div className="w-full max-w-[519px] mx-auto pt-6 lg:pt-[66px] pb-6">
           <SignupForm />
         </div>
       </div>
