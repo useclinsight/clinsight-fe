@@ -1,8 +1,8 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { triggerComingSoonModal } from '@/components/coming-soon';
 import { motion, Variants } from 'motion/react';
 
 const containerVariants: Variants = {
@@ -97,9 +97,9 @@ export function HowItWorksHero() {
             </motion.div>
           </motion.div>
 
-          <div className="relative w-full flex-1 min-h-[400px] lg:min-h-[600px] flex items-center justify-end -mr-6 lg:mr-0 -mt-8 lg:mt-0">
+          <div className="relative w-full flex-1 min-h-[400px] lg:min-h-[600px] flex items-center justify-center lg:justify-end -mt-8 lg:mt-0">
             {/* Circle Wrapper */}
-            <div className="relative h-[320px] w-[320px] lg:h-[600px] lg:w-[600px] flex items-center justify-center scale-90 sm:scale-100 lg:scale-100 translate-x-6 lg:translate-x-0">
+            <div className="relative h-[calc(100vw-3rem)] w-[calc(100vw-3rem)] max-h-[320px] max-w-[320px] lg:h-[600px] lg:w-[600px] lg:max-h-none lg:max-w-none flex items-center justify-center scale-90 sm:scale-100 lg:scale-100 translate-x-0">
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -264,24 +264,25 @@ export function HowItWorksHero() {
 
                 {/* CTA Button */}
                 <div className="z-20 mt-0 lg:mt-1 w-full">
-                  <Button
-                    type="button"
-                    variant="brand"
-                    onClick={() => triggerComingSoonModal()}
-                    className="w-full rounded-lg lg:rounded-xl py-3 lg:py-7 text-[9px]
+                  <Link href="/waitlist" className="block w-full">
+                    <Button
+                      type="button"
+                      variant="brand"
+                      className="w-full rounded-lg lg:rounded-xl py-3 lg:py-7 text-[9px]
                     lg:text-sm font-bold shadow-lg transition-all bg-[#1565C0] text-white
                     hover:bg-[#1565C0]/90 flex items-center justify-center"
-                  >
-                    Get Started
-                    <Image
-                      src="/assets/how-it-works/arrow_forward.svg"
-                      alt=""
-                      aria-hidden="true"
-                      width={16}
-                      height={16}
-                      className="ml-1.5 lg:ml-2 w-3 h-3 lg:w-4 lg:h-4"
-                    />
-                  </Button>
+                    >
+                      Get Started
+                      <Image
+                        src="/assets/how-it-works/arrow_forward.svg"
+                        alt=""
+                        aria-hidden="true"
+                        width={16}
+                        height={16}
+                        className="ml-1.5 lg:ml-2 w-3 h-3 lg:w-4 lg:h-4"
+                      />
+                    </Button>
+                  </Link>
                 </div>
               </motion.div>
             </div>
