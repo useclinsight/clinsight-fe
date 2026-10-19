@@ -324,7 +324,7 @@ export default function LoginContent() {
             alt="Doctor smiling in a white coat"
             fill
             sizes="(min-width: 1024px) 46.18vw, 0px"
-            className="object-fill"
+            className="object-cover object-top"
             loading="eager"
             fetchPriority="high"
           />
