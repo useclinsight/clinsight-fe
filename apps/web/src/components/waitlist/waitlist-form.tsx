@@ -86,7 +86,7 @@ export function WaitlistForm() {
           <div className="flex h-15 w-15 items-center justify-center rounded-2xl border-b-[5px] border-r-[5px] border-[#DCE8F6] bg-blue-600 p-2.5">
             {/* <MyIcon /> */}
             <Image
-              src="/assets/waitlist-assets/vector.svg"
+              src="/assets/waitlist-assets/Vector.svg"
               alt="Clinsight Logo"
               width={60}
               height={60}
