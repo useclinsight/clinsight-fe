@@ -53,12 +53,13 @@ export default function InputFieldContainer({
       <AnimatePresence>
         {error && (
           <motion.p
+            id={`${htmlFor}-error`}
             key="error"
             initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -6 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="text-xs italic text-red-500 font-medium text-left"
+            className="text-left text-xs font-normal leading-[1.25] text-red-500"
           >
             {error}
           </motion.p>

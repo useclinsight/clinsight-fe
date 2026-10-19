@@ -342,6 +342,7 @@ export default function LoginContent() {
                 isSubmitting={isSubmitting}
                 isValid={isFormValid}
                 apiError={apiError}
+                isLockedOut={isLockedOut}
                 showPassword={showPassword}
                 setShowPassword={setShowPassword}
                 onSubmit={onSubmit}
@@ -388,15 +389,13 @@ function isInvalidCredentialResponse(status: number): boolean {
 // ─── Inner Form ─────────────────────────────────────────────────────────────────
 
 interface LoginFormProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleSubmit: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   errors: any;
   isSubmitting: boolean;
   isValid: boolean;
   apiError: string | null;
+  isLockedOut: boolean;
   showPassword: boolean;
   setShowPassword: (v: boolean) => void;
   onSubmit: (data: LoginValues) => Promise<void>;
@@ -411,12 +410,16 @@ function LoginForm({
   isSubmitting,
   isValid,
   apiError,
+  isLockedOut,
   showPassword,
   setShowPassword,
   onSubmit,
   onCredentialChange,
   onGoogleLogin,
 }: LoginFormProps) {
+  const hasCredentialError =
+    isLockedOut || apiError?.startsWith("We couldn't verify your email or password.");
+
   return (
     <div className="flex w-full flex-col gap-5 [&_label]:text-sm">
       {/* Header */}
@@ -445,7 +448,11 @@ function LoginForm({
               type="email"
               placeholder="Enter your email"
               className="h-[52px] border-[#D0D0D0]"
-              error={!!errors.email}
+              error={!!errors.email || !!hasCredentialError}
+              aria-invalid={!!errors.email || !!hasCredentialError}
+              aria-describedby={
+                errors.email ? 'email-error' : hasCredentialError ? 'login-error' : undefined
+              }
               autoComplete="email"
             />
           </InputFieldContainer>
@@ -464,7 +471,15 @@ function LoginForm({
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   className="h-[52px] border-[#D0D0D0] pr-12"
-                  error={!!errors.password}
+                  error={!!errors.password || !!hasCredentialError}
+                  aria-invalid={!!errors.password || !!hasCredentialError}
+                  aria-describedby={
+                    errors.password
+                      ? 'password-error'
+                      : hasCredentialError
+                        ? 'login-error'
+                        : undefined
+                  }
                   autoComplete="current-password"
                 />
                 <button
@@ -494,10 +509,10 @@ function LoginForm({
         <div className="flex flex-col items-center gap-[17px]">
           <Button
             type="submit"
-            disabled={isSubmitting || !isValid}
+            disabled={isSubmitting || !isValid || !!hasCredentialError}
             className={cn(
               'h-[52px] w-full rounded-xl px-6 py-3 font-sans text-base font-medium leading-6 transition-colors select-none',
-              !isSubmitting && isValid
+              !isSubmitting && isValid && !hasCredentialError
                 ? 'bg-primary-blue text-white hover:bg-primary-blue/90 cursor-pointer'
                 : 'bg-[#F5F5F5] text-text-disabled cursor-not-allowed',
             )}
@@ -514,16 +529,33 @@ function LoginForm({
 
           {/* API-level error (non-field) */}
           <AnimatePresence>
-            {apiError && !errors.email && !errors.password && (
+            {apiError && (isLockedOut || (!errors.email && !errors.password)) && (
               <motion.p
+                id="login-error"
+                role="alert"
                 key="api-error"
                 initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -6 }}
                 transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="text-xs italic font-medium text-red-500 w-full text-center"
+                className="w-full text-center font-sans text-sm font-normal leading-5 text-red-500"
               >
-                {apiError}
+                {isLockedOut ? (
+                  <>
+                    <span className="block">Too many unsuccessful sign-in attempts.</span>
+                    <span>
+                      Please try again in{' '}
+                      {apiError.match(/again in (.+?) or reset your password/)?.[1] ?? '15 minutes'}{' '}
+                      or{' '}
+                      <Link href="/forgot-password" className="text-primary-blue underline">
+                        reset your password
+                      </Link>
+                      .
+                    </span>
+                  </>
+                ) : (
+                  apiError
+                )}
               </motion.p>
             )}
           </AnimatePresence>
