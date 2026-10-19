@@ -15,21 +15,25 @@ interface VerificationRecord {
 export default function VerificationCompletePage() {
   const [loading, setLoading] = useState(true);
   const [record, setRecord] = useState<VerificationRecord | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let active = true;
     async function loadData() {
-      const data = await getVerificationStatus();
-      if (active) {
-        setRecord(data);
-        setLoading(false);
+      try {
+        const data = await getVerificationStatus();
+        if (active) setRecord(data);
+      } catch {
+        if (active) setRecord(null);
+      } finally {
+        if (active) setLoading(false);
       }
     }
     loadData();
     return () => {
       active = false;
     };
-  }, []);
+  }, [retryCount]);
 
   if (loading) {
     return (
@@ -48,7 +52,28 @@ export default function VerificationCompletePage() {
     );
   }
 
-  const submissionDate = record ? new Date(record.created_at) : new Date();
+  if (!record) {
+    return (
+      <div className="w-full rounded-2xl border border-[#EBEBEB] bg-white p-6 text-center shadow-sm md:p-8">
+        <h1 className="text-xl font-semibold text-text-primary">Application details unavailable</h1>
+        <p className="mt-2 text-sm text-secondary-3">
+          We could not load your verification details right now. Please try again.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setLoading(true);
+            setRetryCount((count) => count + 1);
+          }}
+          className="mt-5 rounded-xl bg-primary-blue px-5 py-2.5 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  const submissionDate = new Date(record.created_at);
   const dateStr = submissionDate.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
@@ -60,8 +85,7 @@ export default function VerificationCompletePage() {
     hour12: true,
   });
   const formattedDate = `${dateStr} at ${timeStr}`;
-  const referenceId = record ? record.id : 'CLN-DRV-2026-000245';
-  // const referenceId = record ? record.id : 'N/A';
+  const referenceId = record.id;
 
   return (
     <div className="w-full flex flex-col items-center justify-center select-none">

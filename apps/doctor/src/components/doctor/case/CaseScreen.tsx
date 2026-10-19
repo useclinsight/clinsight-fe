@@ -23,7 +23,10 @@ export default function CaseScreen({ caseData }: { caseData: CaseDetail }) {
     <div className="flex flex-col gap-6 p-4 md:p-6 bg-[#F9FAFB] min-h-screen font-['Inter']">
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-[#727783] mb-2">
-        <Link href="/user/case" className="hover:text-primary-blue transition-colors">
+        <Link
+          href="/user/case"
+          className="rounded-sm hover:text-primary-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue transition-colors"
+        >
           Active Cases
         </Link>
         <HugeiconsIcon icon={ArrowRight02Icon} size={14} aria-hidden="true" />
@@ -71,7 +74,7 @@ export default function CaseScreen({ caseData }: { caseData: CaseDetail }) {
         <button
           type="button"
           onClick={() => router.push(`/user/case/${caseData.id}/diagnostic-review`)}
-          className="bg-primary-blue text-white px-6 py-3 rounded-xl font-bold text-sm md:text-base hover:bg-blue-700 transition-all shadow-[0px_4px_12px_rgba(21,101,192,0.2)] whitespace-nowrap"
+          className="bg-primary-blue text-white px-6 py-3 rounded-xl font-bold text-sm md:text-base hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue transition-all shadow-[0px_4px_12px_rgba(21,101,192,0.2)] whitespace-nowrap"
         >
           Begin Diagnostic Review
         </button>
@@ -229,8 +232,9 @@ export default function CaseScreen({ caseData }: { caseData: CaseDetail }) {
               />
             </div>
             <button
+              type="button"
               onClick={() => router.push(`/user/case/${caseData.id}/lab-result`)}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-primary-blue text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors shadow-lg"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-primary-blue text-white rounded-xl font-bold text-sm hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue transition-colors shadow-lg"
             >
               Preview Lab Result
               <HugeiconsIcon icon={ArrowRight02Icon} size={18} />

@@ -221,16 +221,14 @@ export default function ProfessionalInfoPage() {
           name="passportPhoto"
           control={control}
           render={({ field }) => (
-            <InputFieldContainer
-              label="Passport Photograph*"
-              htmlFor="passportPhoto"
-              error={errors.passportPhoto?.message as string}
-            >
+            <InputFieldContainer label="Passport Photograph*" htmlFor="passportPhoto">
               <VerificationFileUpload
+                id="passportPhoto"
                 label="Passport Photograph"
                 acceptText="PDF, PNG, JPG (max 10MB)"
                 onChange={field.onChange}
                 value={field.value}
+                error={errors.passportPhoto?.message as string}
               />
             </InputFieldContainer>
           )}

@@ -17,7 +17,7 @@ export default function DiagnosticReviewScreen({ caseId }: DiagnosticReviewScree
       >
         <Link
           href={`/user/case/${caseId}`}
-          className="text-[#767676] hover:text-primary-blue transition-colors"
+          className="rounded-sm text-[#767676] hover:text-primary-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue transition-colors"
         >
           Case Detail
         </Link>
