@@ -452,8 +452,8 @@ function LoginForm({
   return (
     <div className="flex w-full flex-col gap-5">
       {/* Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="font-sans text-4xl font-semibold leading-10 tracking-tight text-text-primary">
+      <div className="flex flex-col gap-2 lg:gap-4">
+        <h1 className="font-sans text-4xl font-semibold leading-10 tracking-tight text-text-primary lg:leading-[1.2] lg:tracking-[-0.72px]">
           Welcome back
         </h1>
         <p className="font-sans text-base font-normal leading-6 text-secondary-3">
@@ -461,13 +461,9 @@ function LoginForm({
         </p>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex w-full flex-col gap-8 lg:gap-4"
-        noValidate
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col gap-5" noValidate>
         {/* Fields */}
-        <div className="flex flex-col gap-4 lg:gap-3">
+        <div className="mb-3 flex flex-col gap-4">
           {/* Email */}
           <InputFieldContainer label="Email Address" htmlFor="email" error={errors.email?.message}>
             <Input
@@ -475,52 +471,59 @@ function LoginForm({
               {...register('email', { onChange: onCredentialChange })}
               type="email"
               placeholder="Enter your email"
+              className="h-[52px] border-[#D0D0D0]"
               error={!!errors.email}
               autoComplete="email"
             />
           </InputFieldContainer>
 
           {/* Password */}
-          <InputFieldContainer label="Password" htmlFor="password" error={errors.password?.message}>
-            <div className="relative w-full">
-              <Input
-                id="password"
-                {...register('password', { onChange: onCredentialChange })}
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
-                className="pr-12"
-                error={!!errors.password}
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-text-disabled transition-colors hover:text-text-primary"
-              >
-                <HugeiconsIcon icon={showPassword ? EyeOffIcon : ViewIcon} size={18} />
-              </button>
-            </div>
-          </InputFieldContainer>
-
-          {/* Forgot password */}
-          <div className="flex justify-end">
-            <Link
-              href="/forgot-password"
-              className="font-sans text-sm font-normal text-primary-blue underline leading-5 hover:opacity-80 transition-opacity"
+          <div className="flex flex-col gap-1">
+            <InputFieldContainer
+              label="Password"
+              htmlFor="password"
+              error={errors.password?.message}
             >
-              Forgot password?
-            </Link>
+              <div className="relative w-full">
+                <Input
+                  id="password"
+                  {...register('password', { onChange: onCredentialChange })}
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  className="h-[52px] border-[#D0D0D0] pr-12"
+                  error={!!errors.password}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-text-disabled transition-colors hover:text-text-primary"
+                >
+                  <HugeiconsIcon icon={showPassword ? EyeOffIcon : ViewIcon} size={18} />
+                </button>
+              </div>
+            </InputFieldContainer>
+
+            {/* Forgot password */}
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="font-sans text-sm font-normal leading-[1.5] text-primary-blue underline transition-opacity hover:opacity-80"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col items-center gap-4 lg:gap-3">
+        <div className="flex flex-col items-center gap-[17px]">
           <Button
             type="submit"
             disabled={isSubmitting || !isValid}
             className={cn(
-              'h-12 w-full rounded-xl px-6 py-3 font-sans text-base font-medium leading-6 transition-colors select-none',
+              'h-[52px] w-full rounded-xl px-6 py-3 font-sans text-base font-medium leading-6 transition-colors select-none',
               !isSubmitting && isValid
                 ? 'bg-primary-blue text-white hover:bg-primary-blue/90 cursor-pointer'
                 : 'bg-[#F5F5F5] text-text-disabled cursor-not-allowed',
@@ -553,7 +556,7 @@ function LoginForm({
           </AnimatePresence>
 
           {/* Divider */}
-          <div className="my-1 flex w-full items-center gap-1.5">
+          <div className="flex h-[22px] w-full items-center gap-1.5">
             <div className="h-0 flex-1 border-t border-[#F0F0F0]" />
             <span className="font-sans text-sm font-normal leading-5 text-text-disabled">or</span>
             <div className="h-0 flex-1 border-t border-[#F0F0F0]" />
@@ -564,14 +567,16 @@ function LoginForm({
             type="button"
             variant="outline"
             onClick={onGoogleLogin}
-            className="flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-[#E0E0E0] bg-white font-sans text-base font-medium text-[#313131] transition-colors hover:bg-slate-50"
+            className="flex h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#D0D0D0] bg-white font-sans text-base font-medium text-secondary-3 transition-colors hover:bg-slate-50"
           >
-            <GoogleIcon />
+            <span className="flex size-6 items-center justify-center">
+              <GoogleIcon />
+            </span>
             Google
           </Button>
 
           {/* Sign up link */}
-          <div className="mt-2 text-center font-sans">
+          <div className="text-center font-sans">
             <span className="text-sm font-normal leading-5 text-secondary-3">
               Don&apos;t have an account?{' '}
             </span>
@@ -585,13 +590,10 @@ function LoginForm({
         </div>
 
         {/* Footer terms */}
-        <div className="mt-2 flex w-full justify-center p-2.5 lg:mt-0">
-          <p className="w-72 text-center font-sans text-xs font-normal leading-4 text-text-primary">
+        <div className="flex w-full justify-center p-2.5">
+          <p className="w-[302px] text-center font-sans text-xs font-normal leading-[1.5] text-text-primary">
             By continuing, you have read and agreed to Clinsight&apos;s{' '}
-            <Link
-              href="/terms-and-conditions"
-              className="font-medium leading-4 text-primary-blue underline"
-            >
+            <Link href="/terms-and-conditions" className="font-medium text-primary-blue underline">
               Terms and Conditions.
             </Link>
           </p>
