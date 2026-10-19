@@ -3,6 +3,7 @@ import { PropsWithChildren } from 'react';
 
 interface InputFieldContainerProps extends PropsWithChildren {
   label: string;
+  mobileLabel?: string;
   htmlFor: string;
   error?: string;
 }
@@ -16,6 +17,7 @@ interface VerificationInputFieldProps extends PropsWithChildren {
 
 export default function InputFieldContainer({
   label,
+  mobileLabel,
   htmlFor,
   error,
   children,
@@ -38,7 +40,14 @@ export default function InputFieldContainer({
         htmlFor={htmlFor}
         className="text-xs text-text-primary leading-[150%] tracking-[-1%] md:text-sm"
       >
-        {renderLabel(label)}
+        {mobileLabel ? (
+          <>
+            <span className="lg:hidden">{renderLabel(mobileLabel)}</span>
+            <span className="hidden lg:inline">{renderLabel(label)}</span>
+          </>
+        ) : (
+          renderLabel(label)
+        )}
       </label>
       {children}
       <AnimatePresence>

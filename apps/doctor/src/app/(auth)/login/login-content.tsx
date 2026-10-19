@@ -331,21 +331,10 @@ export default function LoginContent() {
         </div>
 
         {/* Right — form pane */}
-        <div className="flex w-full flex-1 flex-col overflow-y-auto">
-          {/* The logo appears over the hero on desktop and above the form on mobile. */}
-          <div className="px-8 pb-0 pt-8 lg:hidden">
-            <Image
-              src="/assets/header-assets/clinsight-logo.svg"
-              alt="Clinsight Logo"
-              width={140}
-              height={36}
-              priority
-            />
-          </div>
-
-          {/* Centered form */}
-          <div className="flex flex-1 items-center justify-center px-8 py-10">
-            <div className="w-full max-w-[519px]">
+        <div className="flex min-w-0 w-full flex-1 flex-col overflow-y-auto">
+          {/* Top-aligned on mobile, centered beside the hero on desktop. */}
+          <div className="flex flex-1 items-start justify-center px-4 pb-8 pt-6 lg:items-center lg:px-8 lg:py-10">
+            <div className="min-w-0 w-full max-w-[519px]">
               <LoginForm
                 register={register}
                 handleSubmit={handleSubmit}
@@ -429,13 +418,13 @@ function LoginForm({
   onGoogleLogin,
 }: LoginFormProps) {
   return (
-    <div className="flex w-full flex-col gap-5">
+    <div className="flex w-full flex-col gap-5 [&_label]:text-sm">
       {/* Header */}
       <div className="flex flex-col gap-2 lg:gap-4">
-        <h1 className="font-sans text-4xl font-semibold leading-10 tracking-tight text-text-primary lg:leading-[1.2] lg:tracking-[-0.72px]">
+        <h1 className="font-sans text-2xl font-semibold leading-[1.3] tracking-[-0.48px] text-text-primary lg:text-4xl lg:leading-[1.2] lg:tracking-[-0.72px]">
           Welcome back
         </h1>
-        <p className="font-sans text-base font-normal leading-6 text-secondary-3">
+        <p className="font-sans text-sm font-normal leading-[1.5] tracking-[-0.14px] text-secondary-3 lg:text-base lg:leading-6 lg:tracking-[-0.16px]">
           Review patient cases, interpret lab results, and manage your consultations securely.
         </p>
       </div>
@@ -444,7 +433,12 @@ function LoginForm({
         {/* Fields */}
         <div className="mb-3 flex flex-col gap-4">
           {/* Email */}
-          <InputFieldContainer label="Email Address" htmlFor="email" error={errors.email?.message}>
+          <InputFieldContainer
+            label="Email address"
+            mobileLabel="Email"
+            htmlFor="email"
+            error={errors.email?.message}
+          >
             <Input
               id="email"
               {...register('email', { onChange: onCredentialChange })}
@@ -488,7 +482,7 @@ function LoginForm({
             <div className="flex justify-end">
               <Link
                 href="/forgot-password"
-                className="font-sans text-sm font-normal leading-[1.5] text-primary-blue underline transition-opacity hover:opacity-80"
+                className="font-sans text-xs font-normal leading-[1.5] text-primary-blue underline transition-opacity hover:opacity-80 lg:text-sm"
               >
                 Forgot password?
               </Link>
