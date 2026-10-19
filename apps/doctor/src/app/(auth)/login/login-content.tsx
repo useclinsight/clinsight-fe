@@ -318,12 +318,12 @@ export default function LoginContent() {
       {/* ── Split layout ─────────────────────────────────────────────────── */}
       <div className="flex min-h-screen w-full bg-white lg:h-screen lg:overflow-hidden">
         {/* Left — hero image (desktop only) */}
-        <div className="relative hidden shrink-0 lg:block lg:w-[45%]">
+        <div className="relative hidden shrink-0 lg:block lg:w-[46.18%]">
           <Image
             src="/assets/login-page-assets/young_black_female_doctor_clean.png"
             alt="Doctor smiling in a white coat"
             fill
-            sizes="(min-width: 1024px) 45vw, 0px"
+            sizes="(min-width: 1024px) 46.18vw, 0px"
             className="object-fill"
             loading="eager"
             fetchPriority="high"
@@ -366,7 +366,7 @@ export default function LoginContent() {
 
           {/* Centered form */}
           <div className="flex flex-1 items-center justify-center px-8 py-10">
-            <div className="w-full max-w-105">
+            <div className="w-full max-w-[519px]">
               <LoginForm
                 register={register}
                 handleSubmit={handleSubmit}
