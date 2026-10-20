@@ -38,7 +38,7 @@ const cards = [
 function HistoryEmpty({ kind }: { kind: 'withdrawals' | 'earnings' }) {
   const isEarnings = kind === 'earnings';
   return (
-    <div className="flex min-h-[215px] flex-col items-center justify-center px-4 py-8 text-center md:min-h-[239px]">
+    <div className="flex min-h-[150px] flex-col items-center justify-center px-4 py-4 text-center md:min-h-[239px] md:py-8">
       {isEarnings ? (
         <Image src="/assets/doctor-design/earnings-empty.svg" alt="" width={80} height={80} />
       ) : (
@@ -66,13 +66,13 @@ function HistoryEmpty({ kind }: { kind: 'withdrawals' | 'earnings' }) {
 
 export default function EarningsPage() {
   return (
-    <div className="w-full max-w-[1180px] space-y-5 px-2.5 pb-8 pt-1.5">
-      <h1 className="text-2xl font-semibold text-text-primary sm:sr-only">Earnings</h1>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4 xl:gap-5">
+    <div className="flex w-full max-w-[1162px] flex-col gap-5 px-2.5 pb-8 sm:-mt-1 max-sm:mt-[5px] max-sm:px-1.5">
+      <h1 className="sr-only">Earnings</h1>
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4 xl:gap-5">
         {cards.map((card) => (
           <section
             key={card.title}
-            className="flex min-h-[96px] flex-col justify-between rounded-[20px] border border-outline-border bg-white px-4 py-3 md:min-h-[137px] md:px-6 md:py-[18px]"
+            className="flex min-h-[138px] flex-col justify-between rounded-[20px] border border-outline-border bg-white px-4 py-3 md:min-h-[137px] md:px-6 md:py-[18px]"
           >
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-medium text-text-secondary md:text-base">{card.title}</h2>
@@ -98,7 +98,7 @@ export default function EarningsPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[464fr_656fr] lg:gap-5">
-        <section className="flex min-h-[175px] flex-col rounded-2xl border border-[#E8EDF3] bg-white p-4 md:min-h-[300px] md:items-center md:justify-center md:p-6">
+        <section className="flex min-h-[254px] flex-col rounded-2xl border border-[#E8EDF3] bg-white p-4 md:min-h-[300px] md:items-center md:justify-center md:p-6">
           <h2 className="text-sm font-semibold text-text-primary md:sr-only">Bank Account</h2>
           <div className="flex flex-1 flex-col items-center justify-center text-center md:flex-none">
             <span

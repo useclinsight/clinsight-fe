@@ -58,7 +58,7 @@ export function DoctorVerificationBanner() {
   }, [status, applyResult]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-2.5 pt-2 pb-2">
+    <div className="w-full max-w-7xl mx-auto px-1.5 pt-2 pb-2 empty:hidden md:px-2.5">
       <VerificationBanner
         status={status}
         rejectionReason={rejectionReason}
@@ -96,14 +96,14 @@ export default function VerificationBanner({
     if (initialStatus === 'approved' || initialStatus === 'verified') {
       if (dismissed) return null;
       return (
-        <div className="bg-[#E9FBF0] border border-[#CFEFDA] rounded-[16px] p-4 md:p-5 shadow-2xs transition-all">
+        <div className="relative bg-[#E9FBF0] border border-[#CFEFDA] rounded-[16px] p-4 md:p-5 shadow-2xs transition-all">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-3.5">
-              <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0 mt-0.5">
+            <div className="flex items-start gap-2.5 md:gap-3.5">
+              <div className="w-4 h-4 md:w-6 md:h-6 rounded-full bg-white flex items-center justify-center shrink-0 mt-0.5">
                 <Image
                   src="/assets/dashboard/verification_verified.svg"
-                  width={24}
-                  height={24}
+                  width={16}
+                  height={16}
                   alt="Verification Verified"
                 />
               </div>
@@ -113,7 +113,7 @@ export default function VerificationBanner({
                 </h4>
                 <p className="text-sm text-[#4B5563] max-w-2xl mt-0.5 leading-relaxed">
                   Your credentials have been approved. You can now begin reviewing patients&apos;
-                  laboratory results and going on duty.
+                  laboratory results.
                 </p>
               </div>
             </div>
@@ -125,7 +125,7 @@ export default function VerificationBanner({
                 setDismissed(true);
                 await dismissVerificationBanner();
               }}
-              className="text-[#10B981] hover:text-[#059669] p-1.5 rounded-lg hover:bg-[#D1FAE5]/60 transition-colors shrink-0 cursor-pointer"
+              className="absolute right-2 top-2 md:static text-[#10B981] hover:text-[#059669] p-1.5 rounded-lg hover:bg-[#D1FAE5]/60 transition-colors shrink-0 cursor-pointer"
             >
               <HugeiconsIcon icon={Cancel01Icon} size={18} color="currentColor" />
             </button>

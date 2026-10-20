@@ -95,7 +95,7 @@ export function EditorToolbar({
     <div className="w-full bg-white flex flex-col shrink-0 select-none border-b border-[#E8E8E8]">
       <div
         className={cn(
-          'flex items-center px-6 py-3.5 border-b border-[#FAF9F9]',
+          'flex items-center px-6 py-3.5 border-b border-[#FAF9F9] md:hidden',
           isEditable ? 'justify-between' : 'justify-end',
         )}
       >
@@ -136,7 +136,7 @@ export function EditorToolbar({
       </div>
 
       {isEditable && (
-        <div className="flex items-center gap-1.5 px-6 py-2.5 bg-white min-h-[48px] overflow-x-auto">
+        <div className="flex items-center gap-1.5 px-6 py-2.5 bg-white min-h-[48px] md:min-h-[76px] overflow-x-auto">
           <div className="flex items-center gap-1 bg-[#FAF9F9] rounded-lg p-0.5 border border-[#E8E8E8]/30">
             <button
               type="button"
@@ -235,7 +235,6 @@ export function EditorToolbar({
               <HugeiconsIcon icon={Copy01Icon} size={18} />
             </button>
           </div>
-
           <div className="h-4 w-[1px] bg-[#E8E8E8] mx-1" />
 
           <div className="flex items-center gap-0.5">
@@ -260,6 +259,27 @@ export function EditorToolbar({
             >
               <HugeiconsIcon icon={LeftToRightListBulletIcon} size={18} />
             </button>
+          </div>
+          <div className="ml-auto hidden items-center gap-2 md:flex">
+            <button
+              type="button"
+              onClick={onInsertTable}
+              title="Insert table"
+              aria-label="Insert table"
+              className="flex size-9 items-center justify-center rounded-lg text-[#1B1B1B] hover:bg-[#F2F1F1]"
+            >
+              <HugeiconsIcon icon={LayoutTableIcon} size={20} />
+            </button>
+            <button
+              type="button"
+              onClick={onInsertImportantNote}
+              title="Insert important note"
+              aria-label="Insert important note"
+              className="flex size-9 items-center justify-center rounded-lg text-[#1B1B1B] hover:bg-[#F2F1F1]"
+            >
+              <HugeiconsIcon icon={NoteEditIcon} size={20} />
+            </button>
+            <EditDropdown mode={mode} onChange={onModeChange} />
           </div>
         </div>
       )}

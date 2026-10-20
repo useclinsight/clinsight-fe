@@ -130,7 +130,7 @@ export function CaseInfoPanel() {
           role="dialog"
           aria-modal="true"
           aria-label="Full screen lab report"
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#1B1B1B]/30 p-4 sm:p-10"
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#1B1B1B]/30 p-4 sm:px-10 sm:pb-0 sm:pt-24"
         >
           <button
             ref={closeButtonRef}
@@ -142,7 +142,7 @@ export function CaseInfoPanel() {
             <X size={26} />
           </button>
           <div
-            className="origin-top bg-white px-4 py-8 shadow-lg sm:px-8 sm:py-10"
+            className="origin-top bg-white px-2 py-2 shadow-lg sm:px-0"
             style={{ width: `min(${664 * zoom}px, 100%)` }}
           >
             <Image
@@ -151,9 +151,10 @@ export function CaseInfoPanel() {
               width={664}
               height={831}
               className="h-auto w-full"
+              priority
             />
           </div>
-          <div className="fixed bottom-6 right-4 z-10 flex flex-col gap-2 sm:right-10">
+          <div className="fixed bottom-10 right-4 z-10 flex flex-col gap-2 sm:right-10">
             <button
               type="button"
               onClick={() => setZoom((value) => Math.min(1.5, value + 0.1))}

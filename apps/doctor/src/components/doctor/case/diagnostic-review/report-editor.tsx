@@ -223,14 +223,14 @@ export function ReportEditor({ caseId }: ReportEditorProps) {
 
   return (
     <>
-      <div className="flex-1 flex flex-col gap-4 min-w-0 h-full">
+      <div className="flex-1 flex flex-col gap-5 min-w-0 h-full">
         <div className="flex justify-end items-center shrink-0">
           <button
             type="button"
             onClick={handleOpenSendModal}
             disabled={isReportEmpty}
             className={cn(
-              "px-5 py-2.5 transition-all duration-150 text-white text-sm font-medium font-['Inter'] rounded-lg shadow-sm",
+              "min-h-12 px-5 py-2.5 transition-all duration-150 text-white text-sm font-medium font-['Inter'] rounded-lg shadow-sm",
               isReportEmpty
                 ? 'bg-[#D4D4D4] cursor-not-allowed'
                 : 'bg-[#1565C0] hover:bg-[#1256A8] active:bg-[#0F4C9E]',

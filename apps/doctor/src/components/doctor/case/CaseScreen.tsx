@@ -18,19 +18,23 @@ const tabs: { id: CaseTab; label: string }[] = [
 function SummarySection({
   title,
   icon,
+  iconBackground,
   children,
 }: {
   title: string;
   icon: string;
+  iconBackground: string;
   children: React.ReactNode;
 }) {
   return (
     <section className="rounded-xl border border-outline-border bg-[#FAFAFA] p-4">
       <div className="flex items-center justify-between gap-4 border-b border-outline-border pb-3">
-        <h3 className="text-base font-semibold text-text-primary">{title}</h3>
-        <Image src={icon} alt="" width={28} height={28} />
+        <h3 className="text-xl font-semibold text-text-primary">{title}</h3>
+        <span className={`flex size-10 items-center justify-center rounded-full ${iconBackground}`}>
+          <Image src={icon} alt="" width={24} height={24} />
+        </span>
       </div>
-      <div className="pt-3 text-sm leading-6 text-[#767676]">{children}</div>
+      <div className="pt-3 text-base leading-6 text-[#767676]">{children}</div>
     </section>
   );
 }
@@ -52,7 +56,7 @@ export default function CaseScreen({
   ];
 
   return (
-    <div className="min-h-screen space-y-4 bg-[#FAFAFA] px-2.5 pb-10 pt-2.5 text-text-primary md:px-4">
+    <div className="min-h-screen space-y-6 bg-[#FAFAFA] px-2.5 pb-10 pt-4 text-text-primary md:px-[30px]">
       <Link
         href="/user/case"
         className="inline-flex items-center gap-2 rounded-sm text-sm text-primary-blue hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue"
@@ -62,7 +66,7 @@ export default function CaseScreen({
 
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold">Case Details</h1>
+          <h1 className="text-2xl font-semibold">Case Details</h1>
           <p className="mt-1 text-sm text-text-secondary">
             Request #{caseData.id} <span aria-hidden="true">•</span> Received{' '}
             {caseData.timeAssigned}
@@ -78,10 +82,10 @@ export default function CaseScreen({
       </header>
 
       <section
-        className="rounded-xl bg-primary-blue px-5 py-4 text-white"
+        className="rounded-xl bg-primary-blue px-6 py-6 text-white"
         aria-label="Patient information"
       >
-        <h2 className="text-sm font-semibold">Patient Information</h2>
+        <h2 className="text-base font-semibold">Patient Information</h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {patientInfo.map(({ label, value }) => (
             <div key={label}>
@@ -92,7 +96,7 @@ export default function CaseScreen({
         </dl>
       </section>
 
-      <section className="min-h-[600px] rounded-2xl border border-outline-border bg-white p-4 md:p-5">
+      <section className="min-h-[600px] rounded-2xl border border-outline-border bg-white p-4 md:min-h-[932px] md:p-6">
         <div
           role="tablist"
           aria-label="Case information"
@@ -107,7 +111,7 @@ export default function CaseScreen({
               aria-selected={activeTab === id}
               aria-controls={`case-panel-${id}`}
               onClick={() => setActiveTab(id)}
-              className={`shrink-0 border-b-2 px-2 py-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue ${activeTab === id ? 'border-primary-blue font-medium text-primary-blue' : 'border-transparent text-text-disabled hover:text-text-primary'}`}
+              className={`shrink-0 border-b-2 px-2 py-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue ${activeTab === id ? 'border-primary-blue font-medium text-primary-blue' : 'border-transparent text-text-disabled hover:text-text-primary'}`}
             >
               {label}
             </button>
@@ -118,7 +122,7 @@ export default function CaseScreen({
           id={`case-panel-${activeTab}`}
           role="tabpanel"
           aria-labelledby={`case-tab-${activeTab}`}
-          className="pt-4"
+          className="pt-6"
         >
           {activeTab === 'lab' && (
             <div className="flex justify-center overflow-auto">
@@ -134,8 +138,12 @@ export default function CaseScreen({
           )}
 
           {activeTab === 'summary' && (
-            <div className="space-y-4 rounded-2xl border border-outline-border p-4 md:p-5">
-              <SummarySection title="Summary" icon="/assets/dashboard-case-assets/report.svg">
+            <div className="space-y-4 rounded-2xl border border-outline-border p-4 md:p-6">
+              <SummarySection
+                title="Summary"
+                icon="/assets/doctor-design/case-summary.svg"
+                iconBackground="bg-[#E8F0F9]"
+              >
                 <p>
                   The lab results and reported symptoms suggest a possible hormonal imbalance, which
                   may be affecting menstrual regularity and overall energy levels.
@@ -146,7 +154,11 @@ export default function CaseScreen({
                   clinical evaluation.
                 </p>
               </SummarySection>
-              <SummarySection title="Key Findings" icon="/assets/landing-page-assets/key.svg">
+              <SummarySection
+                title="Key Findings"
+                icon="/assets/doctor-design/case-findings.svg"
+                iconBackground="bg-[#FEF0DA]"
+              >
                 <p>Irregular hormone levels detected</p>
                 <p className="mt-2">
                   Symptoms consistent with endocrine disruption (fatigue, mood changes, irregular
@@ -155,7 +167,8 @@ export default function CaseScreen({
               </SummarySection>
               <SummarySection
                 title="Recommendations"
-                icon="/assets/landing-page-assets/recommendation.svg"
+                icon="/assets/doctor-design/case-recommendations.svg"
+                iconBackground="bg-[#DEF6E7]"
               >
                 <p>Referral to a gynecologist or endocrinologist is advised for:</p>
                 <ul className="list-disc pl-5">
@@ -168,11 +181,12 @@ export default function CaseScreen({
           )}
 
           {activeTab === 'note' && (
-            <section className="rounded-xl border border-outline-border p-4 md:p-5">
-              <h2 className="border-b border-outline-border pb-4 text-lg font-semibold text-text-primary">
+            <section className="rounded-xl border border-outline-border p-4 md:p-6">
+              <h2 className="flex items-center gap-4 border-b border-outline-border pb-4 text-2xl font-semibold text-text-primary">
+                <Image src="/assets/doctor-design/case-note.svg" alt="" width={22} height={22} />
                 Patient Note
               </h2>
-              <div className="space-y-4 pt-4 text-sm leading-6 text-[#767676]">
+              <div className="space-y-4 pt-4 text-base leading-6 text-[#767676]">
                 {MOCK_CASE_DATA.patientNote.split('\n\n').map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}

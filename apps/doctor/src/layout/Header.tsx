@@ -22,6 +22,7 @@ function UserHeader({
   const [doctorName, setDoctorName] = useState<string>('');
   const pathname = usePathname();
   const isEarningsPage = pathname === '/user/earnings';
+  const isOverviewPage = pathname === '/user';
 
   useEffect(() => {
     async function loadHeaderState() {
@@ -45,10 +46,10 @@ function UserHeader({
   }, []);
 
   return (
-    <header className="min-h-18 sm:min-h-23 w-full bg-[#FFFFFE] border border-l-0 border-[#F0F0F0] p-4 lg:px-10 md:px-6 sm:py-6.25 flex justify-between items-center gap-5 sm:gap-2.5 sm:flex-row">
+    <header className="min-h-[106px] sm:min-h-[107px] w-full bg-[#FFFFFE] border border-l-0 border-[#F0F0F0] px-4 pb-4 pt-12 sm:p-4 lg:px-10 md:px-6 sm:py-6.25 flex justify-between items-center gap-5 sm:gap-2.5 sm:flex-row">
       <div className="hidden sm:block">
         <h1
-          className={`font-semibold ${isEarningsPage ? 'text-2xl' : 'sm:text-2xl lg:text-[32px]'}`}
+          className={`font-semibold ${isOverviewPage ? 'sm:text-2xl lg:text-[32px]' : 'text-2xl'}`}
         >
           {isEarningsPage ? 'Earnings' : `Welcome ${doctorName ? `Dr. ${doctorName}` : 'Doctor'}`}
         </h1>
@@ -67,6 +68,7 @@ function UserHeader({
 
         <div className="flex gap-2.5 md:gap-4 lg:gap-6.25 items-center">
           <DutyStatusToggle
+            compact
             isOnDuty={isOnDuty}
             disabled={!isApproved}
             disabledReason="Approval required: Your doctor verification must be approved before you can go on duty."

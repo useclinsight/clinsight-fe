@@ -12,6 +12,7 @@ type DutyStatusToggleProps = {
   onStatusChange?: (status: DoctorDutyStatus) => void;
   disabled?: boolean;
   disabledReason?: string;
+  compact?: boolean;
 };
 
 export default function DutyStatusToggle({
@@ -22,6 +23,7 @@ export default function DutyStatusToggle({
   onStatusChange,
   disabled = false,
   disabledReason,
+  compact = false,
 }: DutyStatusToggleProps) {
   const [internalIsOnDuty, setInternalIsOnDuty] = useState<boolean | null>(null);
   const [internalRemainingSeconds, setInternalRemainingSeconds] = useState<number | null>(null);
@@ -106,6 +108,7 @@ export default function DutyStatusToggle({
         disabled={isLoading}
         className={cn(
           'flex h-9 shrink-0 items-center justify-between gap-2 rounded-full border px-2 transition-all sm:w-auto sm:gap-3 sm:px-3.5 border-none outline-none cursor-pointer',
+          compact && 'max-sm:!w-auto max-sm:!bg-transparent max-sm:!p-0 sm:px-4',
           disabled
             ? 'bg-[#E5E7EB] opacity-60 cursor-not-allowed'
             : effectiveIsOnDuty
@@ -128,6 +131,7 @@ export default function DutyStatusToggle({
           <span
             className={cn(
               'whitespace-nowrap text-xs sm:text-sm font-medium',
+              compact && 'max-sm:hidden',
               disabled
                 ? 'text-gray-500'
                 : effectiveIsOnDuty
@@ -135,29 +139,37 @@ export default function DutyStatusToggle({
                   : 'text-text-secondary',
             )}
           >
-            {effectiveIsOnDuty ? 'On duty' : 'Off duty'}
+            {compact
+              ? effectiveIsOnDuty
+                ? 'Online'
+                : 'Offline'
+              : effectiveIsOnDuty
+                ? 'On duty'
+                : 'Off duty'}
           </span>
 
-          {effectiveIsOnDuty && remainingSeconds > 0 && !disabled && (
+          {!compact && effectiveIsOnDuty && remainingSeconds > 0 && !disabled && (
             <span className="text-[11px] font-mono text-[#147638]/80 bg-[#147638]/10 px-1.5 py-0.5 rounded ml-0.5">
               {formatCountdown(remainingSeconds)}
             </span>
           )}
         </div>
 
-        <span
-          className={cn(
-            'relative inline-flex h-4.5 w-8.5 shrink-0 rounded-full transition-colors ml-1',
-            disabled ? 'bg-gray-300' : effectiveIsOnDuty ? 'bg-primary-blue' : 'bg-[#B0B0B0]',
-          )}
-        >
+        {!compact && (
           <span
             className={cn(
-              'absolute top-0.5 size-3.5 rounded-full bg-white transition-[left]',
-              effectiveIsOnDuty && !disabled ? 'left-4.5' : 'left-0.5',
+              'relative inline-flex h-4.5 w-8.5 shrink-0 rounded-full transition-colors ml-1',
+              disabled ? 'bg-gray-300' : effectiveIsOnDuty ? 'bg-primary-blue' : 'bg-[#B0B0B0]',
             )}
-          />
-        </span>
+          >
+            <span
+              className={cn(
+                'absolute top-0.5 size-3.5 rounded-full bg-white transition-[left]',
+                effectiveIsOnDuty && !disabled ? 'left-4.5' : 'left-0.5',
+              )}
+            />
+          </span>
+        )}
       </button>
 
       {errorMessage && (

@@ -43,13 +43,13 @@ export default function AvailableCases({
   const countDisplay = badgeCount ?? (hasCases ? `${cases.length}+` : null);
 
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-2xl md:rounded-[20px] p-5 md:p-6 shadow-2xs">
+    <div className="bg-transparent md:bg-white border-0 md:border md:border-[#E5E7EB] rounded-2xl md:rounded-[20px] p-0 md:p-6 shadow-none md:shadow-2xs">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-[#F3F4F6]">
+      <div className="flex items-center justify-between pb-0 md:pb-4 border-b-0 md:border-b md:border-[#F3F4F6]">
         <div className="flex items-center gap-2.5">
           <h3 className="text-base md:text-lg font-bold text-[#111827]">Available Cases</h3>
           {hasCases && countDisplay && (
-            <span className="bg-primary-blue text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-6 text-center inline-flex items-center justify-center">
+            <span className="hidden md:inline-flex bg-primary-blue text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-6 text-center items-center justify-center">
               {countDisplay}
             </span>
           )}
@@ -143,7 +143,7 @@ export default function AvailableCases({
           </div>
 
           {/* Mobile Card List View */}
-          <div className="md:hidden flex flex-col gap-3 mt-4">
+          <div className="md:hidden flex flex-col gap-4 mt-3">
             {cases.map((item) => (
               <div
                 key={item.id}
@@ -160,7 +160,7 @@ export default function AvailableCases({
                       className="w-10 h-10 rounded-full object-cover border border-gray-100 shrink-0"
                     />
                     <div>
-                      <h4 className="font-bold text-sm text-[#111827]">{item.patientName}</h4>
+                      <h4 className="font-medium text-sm text-[#111827]">{item.patientName}</h4>
                       <span className="text-xs text-[#6B7280]">
                         Sent {item.timeSent || item.timeAssigned || '10 mins ago'}
                       </span>
