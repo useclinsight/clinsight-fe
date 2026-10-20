@@ -11,8 +11,8 @@ function Input({ className, type, error, ref, ...props }: InputProps) {
       type={type}
       className={cn(
         'flex h-12 w-full rounded-xl border border-outline-border bg-white px-5 py-3 text-sm font-normal text-text-primary placeholder:text-text-disabled outline-none focus:border-primary-blue transition-colors font-sans file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50',
-        error && 'border-red-500',
         className,
+        error && 'border-red-500 focus:border-red-500',
       )}
       ref={ref}
       {...props}

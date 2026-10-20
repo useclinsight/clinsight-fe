@@ -1,262 +1,200 @@
 'use client';
 
-import React from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowRight02Icon, ArrowDown01Icon } from '@hugeicons/core-free-icons';
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
+import type { Case } from '@/services/doctor';
+import { MOCK_CASE_DATA } from '@/lib/case-data';
 
-interface CaseDetail {
-  id: string;
-  patientName: string;
-  avatar: string;
-  timeAssigned: string;
-  status: string;
-  condition: string;
+type CaseTab = 'lab' | 'summary' | 'note';
+
+const tabs: { id: CaseTab; label: string }[] = [
+  { id: 'lab', label: 'Lab Report' },
+  { id: 'summary', label: 'AI Interpretation Summary' },
+  { id: 'note', label: 'Patient Notes' },
+];
+
+function SummarySection({
+  title,
+  icon,
+  iconBackground,
+  children,
+}: {
+  title: string;
+  icon: string;
+  iconBackground: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-xl border border-outline-border bg-[#FAFAFA] p-4">
+      <div className="flex items-center justify-between gap-4 border-b border-outline-border pb-3">
+        <h3 className="text-xl font-semibold text-text-primary">{title}</h3>
+        <span className={`flex size-10 items-center justify-center rounded-full ${iconBackground}`}>
+          <Image src={icon} alt="" width={24} height={24} />
+        </span>
+      </div>
+      <div className="pt-3 text-base leading-6 text-[#767676]">{children}</div>
+    </section>
+  );
 }
 
-export default function CaseScreen({ caseData }: { caseData: CaseDetail }) {
-  const router = useRouter();
+export default function CaseScreen({
+  caseData,
+  initialTab = 'lab',
+}: {
+  caseData: Case;
+  initialTab?: CaseTab;
+}) {
+  const [activeTab, setActiveTab] = useState<CaseTab>(initialTab);
+  const patientInfo = [
+    { label: 'Age', value: '—' },
+    { label: 'Gender', value: '—' },
+    { label: 'Location', value: '—' },
+    { label: 'Requested Review', value: '—' },
+    { label: 'Submitted', value: '—' },
+  ];
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 bg-[#F9FAFB] min-h-screen font-['Inter']">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-[#727783] mb-2">
-        <span
-          onClick={() => router.push('/user/case')}
-          className="cursor-pointer hover:text-primary-blue transition-colors"
+    <div className="min-h-screen space-y-6 bg-[#FAFAFA] px-2.5 pb-10 pt-4 text-text-primary md:px-[30px]">
+      <Link
+        href="/user/case"
+        className="inline-flex items-center gap-2 rounded-sm text-sm text-primary-blue hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue"
+      >
+        <ChevronLeft size={16} aria-hidden="true" /> Back
+      </Link>
+
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Case Details</h1>
+          <p className="mt-1 text-sm text-text-secondary">
+            Request #{caseData.id} <span aria-hidden="true">•</span> Received{' '}
+            {caseData.timeAssigned}
+          </p>
+          <span className="sr-only">Patient: {caseData.patientName}</span>
+        </div>
+        <Link
+          href={`/user/case/${caseData.id}/diagnostic-review`}
+          className="inline-flex min-h-10 items-center justify-center rounded-lg bg-primary-blue px-5 text-sm font-medium text-white hover:bg-blue-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue"
         >
-          Active Cases
-        </span>
-        <HugeiconsIcon icon={ArrowRight02Icon} size={14} />
-        <span className="text-[#1B1B1B] font-medium">Case Detail</span>
-      </nav>
-
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-2">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#1B1B1B]">
-              {caseData.patientName}
-            </h1>
-            <HugeiconsIcon
-              icon={ArrowDown01Icon}
-              size={24}
-              className="text-[#1B1B1B] cursor-pointer"
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-4 text-[#727783] text-sm">
-            <div className="flex items-center gap-1.5">
-              <Image
-                src="/assets/dashboard-case-assets/finger-print-check.svg"
-                alt="Case ID Icon"
-                width={16}
-                height={16}
-              />
-              <span>Case ID: #CR-7721</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Image
-                src="/assets/dashboard-case-assets/calendar-03.svg"
-                alt="Assigned Icon"
-                width={16}
-                height={16}
-              />
-              <span>Assigned {caseData.timeAssigned}</span>
-            </div>
-          </div>
-        </div>
-
-        <button className="bg-primary-blue text-white px-6 py-3 rounded-xl font-bold text-sm md:text-base hover:bg-blue-700 transition-all shadow-[0px_4px_12px_rgba(21,101,192,0.2)] whitespace-nowrap">
           Begin Diagnostic Review
-        </button>
-      </div>
+        </Link>
+      </header>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-5 rounded-2xl border border-[#F0F0F0] flex items-center gap-4 shadow-sm">
-          <div className="w-12 h-12 bg-[#E8F0F9] rounded-xl flex items-center justify-center">
-            <Image
-              src="/assets/dashboard-case-assets/duration.svg"
-              alt="Duration Icon"
-              width={24}
-              height={24}
-            />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-[#1565C0] uppercase tracking-wider mb-0.5">
-              Symptom Duration
-            </p>
-            <p className="text-base font-normal text-[#1B1B1B]">3-4 Weeks</p>
-          </div>
+      <section
+        className="rounded-xl bg-primary-blue px-6 py-6 text-white"
+        aria-label="Patient information"
+      >
+        <h2 className="text-base font-semibold">Patient Information</h2>
+        <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {patientInfo.map(({ label, value }) => (
+            <div key={label}>
+              <dt className="text-xs text-white/80">{label}</dt>
+              <dd className="mt-1 text-sm font-medium">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section className="min-h-[600px] rounded-2xl border border-outline-border bg-white p-4 md:min-h-[932px] md:p-6">
+        <div
+          role="tablist"
+          aria-label="Case information"
+          className="flex gap-2 overflow-x-auto border-b border-outline-border md:gap-5"
+        >
+          {tabs.map(({ id, label }) => (
+            <button
+              key={id}
+              id={`case-tab-${id}`}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === id}
+              aria-controls={`case-panel-${id}`}
+              onClick={() => setActiveTab(id)}
+              className={`shrink-0 border-b-2 px-2 py-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue ${activeTab === id ? 'border-primary-blue font-medium text-primary-blue' : 'border-transparent text-text-disabled hover:text-text-primary'}`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-[#F0F0F0] flex items-center gap-4 shadow-sm">
-          <div className="w-12 h-12 bg-[#FDE3E3] rounded-xl flex items-center justify-center">
-            <Image
-              src="/assets/dashboard-case-assets/risk.svg"
-              alt="Risk Icon"
-              width={24}
-              height={24}
-            />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-[#8F2929] uppercase tracking-wider mb-0.5">
-              Risk Level
-            </p>
-            <p className="text-base font-normal text-[#1B1B1B]">Moderate</p>
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-[#F0F0F0] flex items-center gap-4 shadow-sm">
-          <div className="w-12 h-12 bg-[#FEF0DA] rounded-xl flex items-center justify-center">
-            <Image
-              src="/assets/dashboard-case-assets/high-priority.svg"
-              alt="Priority Icon"
-              width={24}
-              height={24}
-            />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-[#935F07] uppercase tracking-wider mb-0.5">
-              Case Priority
-            </p>
-            <p className="text-base font-normal text-[#1B1B1B]">Moderate</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-2">
-        {/* Left Column - AI Interpretation */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
-          <div className="bg-white p-8 rounded-[24px] border border-[#F0F0F0] shadow-sm flex flex-col gap-8">
-            <div className="flex items-center gap-2">
+        <div
+          id={`case-panel-${activeTab}`}
+          role="tabpanel"
+          aria-labelledby={`case-tab-${activeTab}`}
+          className="pt-6"
+        >
+          {activeTab === 'lab' && (
+            <div className="flex justify-center overflow-auto">
               <Image
-                src="/assets/landing-page-assets/ai-scan.svg"
-                alt="AI Icon"
-                width={20}
-                height={20}
+                src="/assets/dashboard-case-assets/preview-large.svg"
+                alt="Medical laboratory report"
+                width={664}
+                height={831}
+                className="h-auto w-full max-w-[664px]"
+                priority
               />
-              <h2 className="text-xl font-bold text-[#1B1B1B]">AI Interpretation</h2>
             </div>
+          )}
 
-            {/* Summary Section */}
-            <div className="p-6 bg-[#F9FAFB] rounded-2xl border border-[#F0F0F0] relative">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#1B1B1B]">Summary</h3>
-                <div className="p-1.5 bg-[#E8F0F9] rounded-full">
-                  <Image
-                    src="/assets/dashboard-case-assets/report.svg"
-                    alt="Report Icon"
-                    width={16}
-                    height={16}
-                  />
-                </div>
-              </div>
-              <p className="text-sm text-[#5E5E5E] leading-relaxed">
-                The lab results and reported symptoms suggest a possible hormonal imbalance, which
-                may be affecting menstrual regularity and overall energy levels.
-                <br />
-                These findings may indicate conditions such as polycystic ovary syndrome (PCOS) or
-                other hormonal disorders. However, this is not conclusive and requires further
-                clinical evaluation.
-              </p>
-            </div>
-
-            {/* Key Findings Section */}
-            <div className="p-6 bg-[#F9FAFB] rounded-2xl border border-[#F0F0F0] relative">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#1B1B1B]">Key Findings</h3>
-                <div className="rounded-full overflow-hidden">
-                  <Image
-                    src="/assets/landing-page-assets/key.svg"
-                    alt="Key Findings Icon"
-                    width={28}
-                    height={28}
-                  />
-                </div>
-              </div>
-              <ul className="text-sm text-[#5E5E5E] space-y-3">
-                <li className="flex items-start gap-2">Irregular hormone levels detected</li>
-                <li className="flex items-start gap-2">
+          {activeTab === 'summary' && (
+            <div className="space-y-4 rounded-2xl border border-outline-border p-4 md:p-6">
+              <SummarySection
+                title="Summary"
+                icon="/assets/doctor-design/case-summary.svg"
+                iconBackground="bg-[#E8F0F9]"
+              >
+                <p>
+                  The lab results and reported symptoms suggest a possible hormonal imbalance, which
+                  may be affecting menstrual regularity and overall energy levels.
+                </p>
+                <p className="mt-2">
+                  These findings may indicate conditions such as polycystic ovary syndrome (PCOS) or
+                  other hormonal disorders. However, this is not conclusive and requires further
+                  clinical evaluation.
+                </p>
+              </SummarySection>
+              <SummarySection
+                title="Key Findings"
+                icon="/assets/doctor-design/case-findings.svg"
+                iconBackground="bg-[#FEF0DA]"
+              >
+                <p>Irregular hormone levels detected</p>
+                <p className="mt-2">
                   Symptoms consistent with endocrine disruption (fatigue, mood changes, irregular
                   cycle)
-                </li>
-              </ul>
+                </p>
+              </SummarySection>
+              <SummarySection
+                title="Recommendations"
+                icon="/assets/doctor-design/case-recommendations.svg"
+                iconBackground="bg-[#DEF6E7]"
+              >
+                <p>Referral to a gynecologist or endocrinologist is advised for:</p>
+                <ul className="list-disc pl-5">
+                  <li>comprehensive hormonal assessment</li>
+                  <li>confirmation of diagnosis</li>
+                  <li>appropriate treatment planning</li>
+                </ul>
+              </SummarySection>
             </div>
+          )}
 
-            {/* Recommendations Section */}
-            <div className="p-6 bg-[#F9FAFB] rounded-2xl border border-[#F0F0F0] relative">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#1B1B1B]">Recommendations</h3>
-                <div className="rounded-full overflow-hidden">
-                  <Image
-                    src="/assets/landing-page-assets/recommendation.svg"
-                    alt="Recommendation Icon"
-                    width={28}
-                    height={28}
-                  />
-                </div>
+          {activeTab === 'note' && (
+            <section className="rounded-xl border border-outline-border p-4 md:p-6">
+              <h2 className="flex items-center gap-4 border-b border-outline-border pb-4 text-2xl font-semibold text-text-primary">
+                <Image src="/assets/doctor-design/case-note.svg" alt="" width={22} height={22} />
+                Patient Note
+              </h2>
+              <div className="space-y-4 pt-4 text-base leading-6 text-[#767676]">
+                {MOCK_CASE_DATA.patientNote.split('\n\n').map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
               </div>
-              <p className="text-sm text-[#5E5E5E] mb-3">
-                Referral to a gynecologist or endocrinologist is advised for:
-              </p>
-              <ul className="text-sm text-[#5E5E5E] space-y-2 list-disc pl-4">
-                <li>comprehensive hormonal assessment</li>
-                <li>confirmation of diagnosis</li>
-                <li>appropriate treatment planning</li>
-              </ul>
-            </div>
-          </div>
+            </section>
+          )}
         </div>
-
-        {/* Right Column */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* Lab Result Preview */}
-          <div className="bg-white p-4 rounded-[24px] border border-[#F0F0F0] shadow-sm overflow-hidden">
-            <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 border border-[#F0F0F0]">
-              <Image
-                src="/assets/dashboard-case-assets/preview.png"
-                alt="Lab Result Preview"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <button
-              onClick={() => router.push(`/user/case/${caseData.id}/lab-result`)}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-primary-blue text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors shadow-lg"
-            >
-              Preview Lab Result
-              <HugeiconsIcon icon={ArrowRight02Icon} size={18} />
-            </button>
-          </div>
-
-          {/* Patient Note */}
-          <div className="bg-white p-8 rounded-[24px] border border-[#F0F0F0] shadow-sm flex flex-col gap-6">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/assets/dashboard-case-assets/notes.svg"
-                alt="Notes Icon"
-                width={20}
-                height={20}
-              />
-              <h2 className="text-xl font-bold text-[#1B1B1B]">Patient Note</h2>
-            </div>
-            <div className="flex flex-col gap-5 text-[#5E5E5E] text-[15px] leading-[1.6]">
-              <p>
-                I&apos;ve been feeling unusually tired for the past few weeks, even when I get
-                enough rest.
-              </p>
-              <p>
-                My periods have also been irregular lately, and I&apos;ve noticed mood changes that
-                I can&apos;t really explain.
-              </p>
-              <p>I&apos;m starting to get worried because this isn&apos;t normal for me.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

@@ -1,128 +1,97 @@
 'use client';
 
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ChevronLeft } from 'lucide-react';
+import type { PropsWithChildren } from 'react';
+import { AuthGuard } from '@/components/auth/AuthGuard';
+import { VerificationProvider } from '@/components/verification/VerificationContext';
 import VerificationLayoutAnimation from '@/components/verification/VerificationLayoutAnimation';
 import VerificationNavbar from '@/components/verification/VerificationNavbar';
-import Image from 'next/image';
-import React, { PropsWithChildren } from 'react';
-import { usePathname } from 'next/navigation';
-import { VerificationProvider } from '@/components/verification/VerificationContext';
-import { cn } from '@/lib/utils';
-import { AuthGuard } from '@/components/auth/AuthGuard';
 
 export default function Layout({ children }: PropsWithChildren) {
   const pathname = usePathname();
-  const showStepProgress =
-    pathname === '/verification/professional-info' ||
-    pathname === '/verification/credentials-verification' ||
-    pathname === '/verification/verification-complete';
-
-  const renderStepProgress = () => {
-    if (!showStepProgress) return null;
-
-    const isStep2 =
-      pathname === '/verification/credentials-verification' ||
-      pathname === '/verification/verification-complete';
-    const isStep3 = pathname === '/verification/verification-complete';
-
-    return (
-      <div className="w-full flex items-center justify-between mb-4 select-none">
-        {/* Step 1 */}
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary-blue"></span>
-          <span className="text-xs font-semibold text-primary-blue">Step 1</span>
-        </div>
-
-        {/* Connector 1 */}
-        <div
-          className={cn(
-            'flex-1 mx-3 border-t',
-            isStep2 ? 'border-solid border-primary-blue' : 'border-dashed border-slate-300',
-          )}
-        ></div>
-
-        {/* Step 2 */}
-        <div className="flex items-center gap-1.5">
-          <span
-            className={cn('w-1.5 h-1.5 rounded-full', isStep2 ? 'bg-primary-blue' : 'bg-[#94A3B8]')}
-          ></span>
-          <span
-            className={cn(
-              'text-xs',
-              isStep2 ? 'font-semibold text-primary-blue' : 'font-medium text-[#94A3B8]',
-            )}
-          >
-            Step 2
-          </span>
-        </div>
-
-        {/* Connector 2 */}
-        <div
-          className={cn(
-            'flex-1 mx-3 border-t',
-            isStep3 ? 'border-solid border-primary-blue' : 'border-dashed border-slate-300',
-          )}
-        ></div>
-
-        {/* Step 3 */}
-        <div className="flex items-center gap-1.5">
-          <span
-            className={cn('w-1.5 h-1.5 rounded-full', isStep3 ? 'bg-primary-blue' : 'bg-[#94A3B8]')}
-          ></span>
-          <span
-            className={cn(
-              'text-xs',
-              isStep3 ? 'font-semibold text-primary-blue' : 'font-medium text-[#94A3B8]',
-            )}
-          >
-            Step 3
-          </span>
-        </div>
-      </div>
-    );
-  };
+  const isProfessional = pathname === '/verification/professional-info';
+  const isCredentials = pathname === '/verification/credentials-verification';
+  const showSteps = isProfessional || isCredentials;
 
   return (
     <AuthGuard allowedRoles={['doctor']}>
       <VerificationProvider>
-        <div className="h-screen w-full flex overflow-hidden bg-white">
-          {/* Left panel - Image (Desktop only, lg and up) */}
-          <div className="hidden lg:block lg:w-1/2 h-screen relative select-none shrink-0 bg-[#18191B]">
+        {pathname === '/verification/verification-complete' ? (
+          <div className="relative flex min-h-screen w-full items-center justify-center bg-white px-5 py-20">
             <Image
-              src="/assets/verification-assets/lab.png"
-              alt="Clinsight Lab"
-              fill
-              className="object-cover object-center"
-              priority
+              src="/assets/dashboard/vector-new.svg"
+              alt="Clinsight"
+              width={116}
+              height={40}
+              className="absolute left-5 top-6 sm:left-20 sm:top-[60px]"
             />
-            {/* Logo overlay on image */}
-            <div className="absolute top-10 left-10">
-              <Image
-                src="/assets/header-assets/clinsight-logo.svg"
-                alt="Clinsight Logo"
-                width={140}
-                height={36}
-                className="object-contain brightness-0 invert"
-                priority
-              />
+            <div className="w-full max-w-[650px] lg:translate-x-[25px]">
+              <VerificationLayoutAnimation>{children}</VerificationLayoutAnimation>
             </div>
           </div>
-
-          {/* Right panel - Form & Navbar */}
-          <div className="w-full lg:w-1/2 h-screen overflow-y-auto bg-white flex flex-col px-6 sm:px-12 lg:px-10 xl:px-16">
-            {/* Navbar */}
-            <div className="w-full py-1.5 shrink-0">
-              <VerificationNavbar />
+        ) : (
+          <div className="flex h-screen w-full overflow-hidden bg-white">
+            <div className="relative hidden h-screen shrink-0 select-none bg-[#18191B] lg:block lg:w-[46.18%]">
+              <Image
+                src="/assets/verification-assets/lab.png"
+                alt="Clinsight Lab"
+                fill
+                className="object-cover object-center"
+                priority
+              />
+              <div className="absolute left-10 top-6">
+                <Image
+                  src="/assets/header-assets/clinsight-logo.svg"
+                  alt="Clinsight Logo"
+                  width={116}
+                  height={36}
+                  className="object-contain brightness-0 invert"
+                  priority
+                />
+              </div>
             </div>
 
-            {/* Form Container */}
-            <div className="flex-1 pb-2 flex flex-col justify-center">
-              <div className="w-full max-w-129.75 mx-auto my-auto py-1">
-                {renderStepProgress()}
-                <VerificationLayoutAnimation>{children}</VerificationLayoutAnimation>
+            <div className="flex h-screen w-full flex-col overflow-y-auto bg-white px-6 sm:px-12 lg:w-[53.82%] lg:px-10 xl:px-16">
+              <div className="w-full shrink-0 py-1.5">
+                <VerificationNavbar />
+              </div>
+              <div className="flex flex-1 flex-col justify-center pb-2">
+                <div className="mx-auto my-auto w-full max-w-129.75 py-1">
+                  {showSteps && (
+                    <>
+                      <Link
+                        href={isProfessional ? '/verification' : '/verification/professional-info'}
+                        className="mb-6 inline-flex items-center gap-2 text-sm text-text-primary hover:text-primary-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue"
+                      >
+                        <ChevronLeft size={16} aria-hidden="true" /> Back
+                      </Link>
+                      <div className="mb-6 flex w-full items-center select-none">
+                        <span className="flex items-center gap-2 text-base text-primary-blue">
+                          <span className="size-4 rounded-full bg-primary-blue" /> Step 1
+                        </span>
+                        <span
+                          className={`mx-3 flex-1 border-t-2 border-dashed ${isCredentials ? 'border-primary-blue' : 'border-slate-300'}`}
+                        />
+                        <span
+                          className={`flex items-center gap-2 text-base ${isCredentials ? 'text-primary-blue' : 'text-[#767676]'}`}
+                        >
+                          <span
+                            className={`size-4 rounded-full ${isCredentials ? 'bg-primary-blue' : 'bg-[#767676]'}`}
+                          />{' '}
+                          Step 2
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  <VerificationLayoutAnimation>{children}</VerificationLayoutAnimation>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </VerificationProvider>
     </AuthGuard>
   );

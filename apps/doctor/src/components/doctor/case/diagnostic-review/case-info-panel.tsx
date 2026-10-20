@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { Minus, Plus, X } from 'lucide-react';
 import {
   ArrowDown01Icon,
   ArrowUp01Icon,
@@ -10,10 +10,6 @@ import {
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { MOCK_CASE_DATA } from '@/lib/case-data';
-
-interface CaseInfoPanelProps {
-  caseId: string;
-}
 
 interface AccordionRowProps {
   title: string;
@@ -48,19 +44,25 @@ function AccordionRow({ title, isOpen, onToggle, children }: AccordionRowProps) 
   );
 }
 
-export function CaseInfoPanel({ caseId }: CaseInfoPanelProps) {
-  const router = useRouter();
+export function CaseInfoPanel() {
   const [aiOpen, setAiOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(true);
   const [labOpen, setLabOpen] = useState(true);
+  const [labPreviewOpen, setLabPreviewOpen] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const { aiInsights, patientNote } = MOCK_CASE_DATA;
 
-  const handleViewFullScreenLab = () => {
-    if (caseId) {
-      router.push(`/user/case/${caseId}/lab-result`);
-    }
-  };
+  useEffect(() => {
+    if (!labPreviewOpen) return;
+    closeButtonRef.current?.focus();
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setLabPreviewOpen(false);
+    };
+    window.addEventListener('keydown', onEscape);
+    return () => window.removeEventListener('keydown', onEscape);
+  }, [labPreviewOpen]);
 
   return (
     <div className="w-full h-full max-w-sm xl:max-w-md flex-shrink-0 bg-white rounded-2xl border border-[#E8E8E8] flex flex-col shadow-sm overflow-hidden">
@@ -98,7 +100,10 @@ export function CaseInfoPanel({ caseId }: CaseInfoPanelProps) {
             </button>
             <button
               type="button"
-              onClick={handleViewFullScreenLab}
+              onClick={() => {
+                setZoom(1);
+                setLabPreviewOpen(true);
+              }}
               aria-label="Open lab result in full screen"
               className="w-6 h-6 flex items-center justify-center hover:bg-[#F0F0F0] rounded transition-colors flex-shrink-0"
             >
@@ -120,6 +125,55 @@ export function CaseInfoPanel({ caseId }: CaseInfoPanelProps) {
           )}
         </div>
       </div>
+      {labPreviewOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Full screen lab report"
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#1B1B1B]/30 p-4 sm:px-10 sm:pb-0 sm:pt-24"
+        >
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={() => setLabPreviewOpen(false)}
+            aria-label="Close lab report"
+            className="fixed left-4 top-4 z-10 flex size-10 items-center justify-center rounded-full bg-white text-[#1B1B1B] shadow-sm sm:left-10 sm:top-10"
+          >
+            <X size={26} />
+          </button>
+          <div
+            className="origin-top bg-white px-2 py-2 shadow-lg sm:px-0"
+            style={{ width: `min(${664 * zoom}px, 100%)` }}
+          >
+            <Image
+              src="/assets/dashboard-case-assets/preview-large.svg"
+              alt="Patient medical laboratory report"
+              width={664}
+              height={831}
+              className="h-auto w-full"
+              priority
+            />
+          </div>
+          <div className="fixed bottom-10 right-4 z-10 flex flex-col gap-2 sm:right-10">
+            <button
+              type="button"
+              onClick={() => setZoom((value) => Math.min(1.5, value + 0.1))}
+              aria-label="Zoom in"
+              className="flex size-10 items-center justify-center rounded-[10px] bg-white text-[#1B1B1B] shadow-sm"
+            >
+              <Plus size={24} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setZoom((value) => Math.max(0.7, value - 0.1))}
+              aria-label="Zoom out"
+              className="flex size-10 items-center justify-center rounded-[10px] bg-white text-[#1B1B1B] shadow-sm"
+            >
+              <Minus size={24} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

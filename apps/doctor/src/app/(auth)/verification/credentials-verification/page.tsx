@@ -1,12 +1,11 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowLeft02Icon, Alert02Icon } from '@hugeicons/core-free-icons';
+import { Alert02Icon } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import {
   credentialsVerificationSchema,
@@ -21,6 +20,7 @@ import { submitVerificationAction } from '@/actions/auth-actions';
 export default function CredentialsVerificationPage() {
   const router = useRouter();
   const { state: verificationState, updateState, clearState } = useVerification();
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   const {
     control,
@@ -38,6 +38,7 @@ export default function CredentialsVerificationPage() {
   });
 
   const onSubmit = async (data: CredentialsVerificationInput) => {
+    setSubmissionError(null);
     // Construct FormData to send files to the server
     const formData = new FormData();
     formData.append('specialization', verificationState.specialization);
@@ -67,9 +68,11 @@ export default function CredentialsVerificationPage() {
         toast.success('Verification documents submitted successfully!');
         router.push('/verification/verification-complete');
       } else {
+        setSubmissionError('We could not submit your documents. Please try again.');
         toast.error('Failed to submit verification. Please try again.');
       }
     } catch (e) {
+      setSubmissionError('We could not submit your documents. Please try again.');
       toast.error('Failed to submit verification. Please try again.');
       console.error(e);
     }
@@ -86,28 +89,17 @@ export default function CredentialsVerificationPage() {
   };
 
   return (
-    <div className="w-full flex flex-col justify-start items-start">
-      {/* Navigation and Steps */}
-      <div className="w-full flex flex-col gap-3 mb-3 select-none">
-        <Link
-          href="/verification/professional-info"
-          className="flex items-center gap-1 text-xs font-semibold text-[#64748B] hover:text-slate-800 transition-colors w-fit"
-        >
-          <HugeiconsIcon icon={ArrowLeft02Icon} className="w-3.5 h-3.5" />
-          <span>Back</span>
-        </Link>
-      </div>
-
+    <div className="w-full flex flex-col justify-start items-start [&_label]:text-lg [&_input]:h-14">
       {/* Heading */}
-      <h1 className="text-xl md:text-2xl font-semibold text-[#1b1b1b] leading-[120%] tracking-tight">
+      <h1 className="text-2xl md:text-4xl font-semibold text-[#1b1b1b] leading-[120%] tracking-tight">
         Verification of Credentials
       </h1>
-      <p className="text-xs md:text-sm text-[#5e5e5e] leading-[140%] mt-1 mb-3.5">
+      <p className="text-sm md:text-base text-[#5e5e5e] leading-[150%] mt-4 mb-6">
         Upload clear copies of the required documents.
       </p>
 
       {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-3.5">
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-6">
         {/* NIN */}
         <Controller
           name="nin"
@@ -134,16 +126,14 @@ export default function CredentialsVerificationPage() {
           name="medicalDegree"
           control={control}
           render={({ field }) => (
-            <InputFieldContainer
-              label="Medical Degree Certificate*"
-              htmlFor="medicalDegree"
-              error={errors.medicalDegree?.message as string}
-            >
+            <InputFieldContainer label="Medical Degree Certificate*" htmlFor="medicalDegree">
               <VerificationFileUpload
+                id="medicalDegree"
                 label="Medical Degree Certificate"
                 acceptText="PDF, PNG, JPG (max 10MB)"
                 onChange={field.onChange}
                 value={field.value}
+                error={errors.medicalDegree?.message as string}
               />
             </InputFieldContainer>
           )}
@@ -154,16 +144,14 @@ export default function CredentialsVerificationPage() {
           name="mdcnLicense"
           control={control}
           render={({ field }) => (
-            <InputFieldContainer
-              label="MDCN License*"
-              htmlFor="mdcnLicense"
-              error={errors.mdcnLicense?.message as string}
-            >
+            <InputFieldContainer label="MDCN License*" htmlFor="mdcnLicense">
               <VerificationFileUpload
+                id="mdcnLicense"
                 label="Front of your MDCN license"
                 acceptText="PDF, PNG, JPG (max 10MB)"
                 onChange={field.onChange}
                 value={field.value}
+                error={errors.mdcnLicense?.message as string}
               />
             </InputFieldContainer>
           )}
@@ -181,8 +169,17 @@ export default function CredentialsVerificationPage() {
           </span>
         </div>
 
+        {submissionError && (
+          <p
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs font-medium text-red-700"
+          >
+            {submissionError}
+          </p>
+        )}
+
         {/* Action Buttons */}
-        <div className="w-full flex gap-3 mt-2.5 select-none">
+        <div className="w-full flex gap-4 mt-0 select-none">
           <button
             type="button"
             onClick={handleSave}

@@ -1,12 +1,9 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowLeft02Icon } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import {
   professionalInfoSchema,
@@ -89,29 +86,21 @@ export default function ProfessionalInfoPage() {
   };
 
   return (
-    <div className="w-full flex flex-col justify-start items-start">
-      {/* Navigation and Steps */}
-      <div className="w-full flex flex-col gap-3 mb-3 select-none">
-        <Link
-          href="/verification"
-          className="flex items-center gap-1 text-xs font-semibold text-[#64748B] hover:text-slate-800 transition-colors w-fit"
-        >
-          <HugeiconsIcon icon={ArrowLeft02Icon} className="w-3.5 h-3.5" />
-          <span>Back</span>
-        </Link>
-      </div>
-
+    <div className="w-full flex flex-col justify-start items-start [&_label]:text-lg [&_input]:h-14">
       {/* Heading */}
-      <h1 className="text-xl md:text-2xl font-semibold text-[#1b1b1b] leading-[120%] tracking-tight">
+      <h1 className="text-2xl md:text-4xl font-semibold text-[#1b1b1b] leading-[120%] tracking-tight">
         Professional Information
       </h1>
-      <p className="text-xs md:text-sm text-[#5e5e5e] leading-[140%] mt-1 mb-3.5">
+      <p className="text-sm md:text-base text-[#5e5e5e] leading-[150%] mt-4 mb-6">
         Complete your professional profile by providing your specialty, years of experience, current
         practice information, and a recent passport photograph.
       </p>
 
       {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-3.5">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full flex flex-col gap-5 [&>div>div>button]:min-h-14"
+      >
         {/* Specialization */}
         <Controller
           name="specialization"
@@ -153,8 +142,8 @@ export default function ProfessionalInfoPage() {
         />
 
         {/* Section Header: Current Practice Details */}
-        <div className="w-full border-t border-slate-100 pt-2 mt-1">
-          <h2 className="text-sm font-semibold text-[#1b1b1b]">Current Practice Details</h2>
+        <div className="w-full pt-1">
+          <h2 className="text-lg font-semibold text-[#1b1b1b]">Current Practice Details</h2>
         </div>
 
         {/* Hospital Name */}
@@ -221,34 +210,32 @@ export default function ProfessionalInfoPage() {
           name="passportPhoto"
           control={control}
           render={({ field }) => (
-            <InputFieldContainer
-              label="Passport Photograph*"
-              htmlFor="passportPhoto"
-              error={errors.passportPhoto?.message as string}
-            >
+            <InputFieldContainer label="Passport Photograph*" htmlFor="passportPhoto">
               <VerificationFileUpload
+                id="passportPhoto"
                 label="Passport Photograph"
                 acceptText="PDF, PNG, JPG (max 10MB)"
                 onChange={field.onChange}
                 value={field.value}
+                error={errors.passportPhoto?.message as string}
               />
             </InputFieldContainer>
           )}
         />
 
         {/* Action Buttons */}
-        <div className="w-full flex gap-3 mt-2.5 select-none">
+        <div className="w-full flex gap-4 mt-0 select-none">
           <button
             type="button"
             onClick={handleSave}
-            className="flex-1 py-2.5 border border-[#E2E8F0] hover:bg-slate-50 text-[#1b1b1b] font-medium text-center rounded-xl transition-all duration-200 cursor-pointer text-xs md:text-sm flex items-center justify-center"
+            className="flex-1 min-h-12 border border-[#E2E8F0] hover:bg-slate-50 text-[#1b1b1b] font-medium text-center rounded-xl transition-all duration-200 cursor-pointer text-sm md:text-base flex items-center justify-center"
           >
             Save
           </button>
           <button
             type="submit"
             disabled={!isValid}
-            className="flex-1 py-2.5 bg-primary-blue hover:bg-blue-1 text-white font-semibold text-center rounded-xl transition-all duration-200 cursor-pointer disabled:bg-[#F5F5F5] disabled:text-text-disabled disabled:cursor-not-allowed text-xs md:text-sm flex items-center justify-center"
+            className="flex-1 min-h-12 bg-primary-blue hover:bg-blue-1 text-white font-semibold text-center rounded-xl transition-all duration-200 cursor-pointer disabled:bg-[#F5F5F5] disabled:text-text-disabled disabled:cursor-not-allowed text-sm md:text-base flex items-center justify-center"
           >
             Continue
           </button>

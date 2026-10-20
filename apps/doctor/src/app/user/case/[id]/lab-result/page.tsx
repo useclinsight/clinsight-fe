@@ -1,5 +1,10 @@
-import LabResultPreview from '@/components/doctor/case/LabResultPreview';
+import { redirect } from 'next/navigation';
 
-export default function LabResultPreviewPage() {
-  return <LabResultPreview />;
+export default async function LabResultPreviewPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  redirect(`/user/case/${id}`);
 }

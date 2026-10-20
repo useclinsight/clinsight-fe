@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -152,32 +151,19 @@ export function SignupForm() {
 
   return (
     <div className="w-full flex flex-col justify-start items-start gap-5">
-      {/* Mobile Logo */}
-      <div className="lg:hidden mb-4 self-start">
-        <div className="relative w-[140px] h-[36px]">
-          <Image
-            src="/assets/header-assets/clinsight-logo.svg"
-            alt="Clinsight Logo"
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
-      </div>
-
       {/* Header */}
-      <div className="self-stretch flex flex-col justify-start items-start gap-4 lg:gap-2 mb-2 lg:mb-0">
-        <h1 className="self-stretch text-text-primary text-4xl font-semibold leading-10 font-sans tracking-tight">
+      <div className="self-stretch flex flex-col justify-start items-start gap-2 lg:gap-4">
+        <h1 className="self-stretch text-text-primary text-2xl font-semibold leading-[1.3] font-sans tracking-[-0.48px] lg:text-4xl lg:leading-[1.2] lg:tracking-[-0.72px]">
           Create Account
         </h1>
-        <p className="self-stretch text-text-secondary-3 text-base font-normal leading-6 font-sans">
+        <p className="self-stretch text-text-secondary-3 text-sm font-normal leading-[1.5] tracking-[-0.14px] font-sans lg:text-base lg:leading-6 lg:tracking-[-0.16px]">
           Sign up to access your Clinsight doctor dashboard and start reviewing patient cases.
         </p>
       </div>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="self-stretch flex flex-col justify-start items-end gap-8 lg:gap-4 w-full"
+        className="self-stretch flex flex-col justify-start items-end gap-3 lg:gap-5 w-full"
         noValidate
       >
         <input
@@ -191,14 +177,14 @@ export function SignupForm() {
           aria-hidden="true"
         />
         {/* Form Inputs Container */}
-        <div className="self-stretch flex flex-col justify-start items-start gap-4 lg:gap-3 overflow-hidden w-full">
+        <div className="self-stretch flex flex-col justify-start items-start gap-4 overflow-hidden w-full">
           {/* First Name & Last Name */}
-          <div className="self-stretch flex flex-col justify-start items-start gap-4 lg:gap-3 w-full">
+          <div className="self-stretch flex flex-col justify-start items-start gap-4 w-full">
             {/* First Name */}
             <div className="self-stretch flex flex-col justify-start items-start gap-1.5 w-full">
               <label
                 htmlFor="firstName"
-                className="self-stretch text-text-primary text-sm font-normal leading-5 font-sans"
+                className="self-stretch text-text-primary text-sm font-normal leading-[1.5] font-sans"
               >
                 First Name
               </label>
@@ -208,6 +194,7 @@ export function SignupForm() {
                 type="text"
                 placeholder="Enter your name"
                 error={!!errors.firstName}
+                className={cn('h-[52px]', !errors.firstName && 'border-[#D0D0D0]')}
               />
               {errors.firstName && (
                 <span className="text-xs text-red-500 mt-1 font-sans">
@@ -220,7 +207,7 @@ export function SignupForm() {
             <div className="self-stretch flex flex-col justify-start items-start gap-1.5 w-full">
               <label
                 htmlFor="lastName"
-                className="self-stretch text-text-primary text-sm font-normal leading-5 font-sans"
+                className="self-stretch text-text-primary text-sm font-normal leading-[1.5] font-sans"
               >
                 Last Name
               </label>
@@ -230,6 +217,7 @@ export function SignupForm() {
                 type="text"
                 placeholder="Enter your name"
                 error={!!errors.lastName}
+                className={cn('h-[52px]', !errors.lastName && 'border-[#D0D0D0]')}
               />
               {errors.lastName && (
                 <span className="text-xs text-red-500 mt-1 font-sans">
@@ -244,7 +232,7 @@ export function SignupForm() {
             <div className="self-stretch flex flex-col justify-start items-start gap-1.5 w-full">
               <label
                 htmlFor="email"
-                className="self-stretch text-text-primary text-sm font-normal leading-5 font-sans"
+                className="self-stretch text-text-primary text-sm font-normal leading-[1.5] font-sans"
               >
                 Email
               </label>
@@ -254,6 +242,7 @@ export function SignupForm() {
                 type="email"
                 placeholder="Enter your email"
                 error={!!errors.email}
+                className={cn('h-[52px]', !errors.email && 'border-[#D0D0D0]')}
               />
               {errors.email && (
                 <span className="text-xs text-red-500 mt-1 font-sans">{errors.email.message}</span>
@@ -266,7 +255,7 @@ export function SignupForm() {
             <div className="self-stretch flex flex-col justify-start items-start gap-1.5 w-full">
               <label
                 htmlFor="password"
-                className="self-stretch text-text-primary text-sm font-normal leading-5 font-sans"
+                className="self-stretch text-text-primary text-sm font-normal leading-[1.5] font-sans"
               >
                 Password
               </label>
@@ -284,7 +273,7 @@ export function SignupForm() {
                   }}
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
-                  className="pr-12"
+                  className={cn('h-[52px] pr-12', !errors.password && 'border-[#D0D0D0]')}
                   error={!!errors.password}
                 />
                 <button
@@ -397,7 +386,7 @@ export function SignupForm() {
             <div className="self-stretch flex flex-col justify-start items-start gap-1.5 w-full">
               <label
                 htmlFor="confirmPassword"
-                className="self-stretch text-text-primary text-sm font-normal leading-5 font-sans"
+                className="self-stretch text-text-primary text-sm font-normal leading-[1.5] font-sans"
               >
                 Confirm Password
               </label>
@@ -407,7 +396,7 @@ export function SignupForm() {
                   {...register('confirmPassword')}
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Retype your password"
-                  className="pr-12"
+                  className={cn('h-[52px] pr-12', !errors.confirmPassword && 'border-[#D0D0D0]')}
                   error={!!errors.confirmPassword}
                 />
                 <button
@@ -438,7 +427,7 @@ export function SignupForm() {
         </div>
 
         {/* Buttons and Divider Section */}
-        <div className="self-stretch flex flex-col justify-center items-center gap-4 lg:gap-3 w-full">
+        <div className="self-stretch flex flex-col justify-center items-center gap-[17px] w-full mt-5 lg:mt-3">
           {apiError && (
             <div className="self-stretch text-red-500 text-xs font-sans text-left mt-1">
               {apiError}
@@ -449,7 +438,7 @@ export function SignupForm() {
             type="submit"
             disabled={isSubmitting || !isFormValid}
             className={cn(
-              'self-stretch h-12 px-6 py-3 rounded-xl inline-flex justify-center items-center gap-2 text-base font-medium leading-6 transition-colors font-sans w-full select-none cursor-pointer border-transparent',
+              'self-stretch h-[52px] px-6 py-3 rounded-xl inline-flex justify-center items-center gap-2 text-base font-medium leading-6 transition-colors font-sans w-full select-none cursor-pointer border-transparent',
               isFormValid && !isSubmitting
                 ? 'bg-primary-blue text-white hover:bg-primary-blue/90'
                 : 'bg-[#F5F5F5] text-text-disabled cursor-not-allowed',
@@ -552,7 +541,7 @@ export function SignupForm() {
           </Button>
 
           {/* Divider */}
-          <div className="self-stretch h-5 relative my-1">
+          <div className="self-stretch h-5 lg:h-[22px] relative my-1 lg:my-0">
             <div className="w-full flex justify-center items-center gap-1.5">
               <div className="flex-1 h-0 border-t border-[#F0F0F0]" />
               <span className="text-text-disabled text-sm font-normal leading-5 font-sans">or</span>
@@ -565,7 +554,7 @@ export function SignupForm() {
             type="button"
             variant="outline"
             onClick={handleGoogleSignup}
-            className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-[#E0E0E0] bg-white text-base font-medium text-[#313131] transition-colors hover:bg-slate-50 font-sans cursor-pointer"
+            className="flex h-[52px] w-full items-center justify-center gap-3 rounded-lg border border-[#D0D0D0] bg-white text-base font-medium text-[#313131] transition-colors hover:bg-slate-50 font-sans cursor-pointer"
           >
             <svg
               width="20"
@@ -596,7 +585,7 @@ export function SignupForm() {
           </Button>
 
           {/* Login Link */}
-          <div className="text-center mt-2 font-sans">
+          <div className="text-center mt-2 lg:mt-0 font-sans">
             <span className="text-text-secondary-3 text-sm font-normal leading-5">
               Already have an account?{' '}
             </span>
@@ -610,7 +599,7 @@ export function SignupForm() {
         </div>
 
         {/* Footer Terms */}
-        <div className="self-stretch p-2.5 flex justify-center items-center w-full mt-2 lg:mt-0">
+        <div className="self-stretch p-2.5 flex justify-center items-center w-full">
           <div className="w-72 text-center text-xs font-normal text-text-primary leading-4 font-sans">
             By continuing, you have read and agreed to Clinsight’s{' '}
             <Link

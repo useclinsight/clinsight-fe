@@ -11,6 +11,7 @@ import {
 import { cn } from '@/lib/utils';
 
 interface VerificationFileUploadProps {
+  id: string;
   label: string;
   acceptText: string;
   onChange: (file: File | null) => void;
@@ -19,8 +20,10 @@ interface VerificationFileUploadProps {
 }
 
 const ALLOWED_MIME_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export default function VerificationFileUpload({
+  id,
   label,
   acceptText,
   onChange,
@@ -46,6 +49,12 @@ export default function VerificationFileUpload({
       return;
     }
 
+    if (file.size > MAX_FILE_SIZE) {
+      onChange(null);
+      setLocalError('File must be 10MB or smaller');
+      return;
+    }
+
     onChange(file);
     setLocalError(null);
   };
@@ -55,6 +64,7 @@ export default function VerificationFileUpload({
     if (files && files.length > 0) {
       validateAndChange(files[0]);
     }
+    e.target.value = '';
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -99,20 +109,34 @@ export default function VerificationFileUpload({
   return (
     <div className="w-full flex flex-col gap-2">
       <input
+        id={id}
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
+        aria-invalid={Boolean(displayError)}
+        aria-describedby={displayError ? `${id}-upload-error` : undefined}
         className="hidden"
         accept=".pdf,.png,.jpg,.jpeg"
       />
 
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={`Upload ${label}`}
+        aria-describedby={displayError ? `${id}-upload-error` : undefined}
         onClick={openFileDialog}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openFileDialog();
+          }
+        }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          'w-full h-[143px] px-3.5 border border-dashed border-[#E2E8F0] rounded-xl bg-white hover:bg-slate-50/50 hover:border-primary-blue/50 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center text-center select-none',
+          'w-full h-[143px] px-3.5 border border-dashed border-[#E2E8F0] rounded-xl bg-white hover:bg-slate-50/50 hover:border-primary-blue/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue transition-all duration-200 cursor-pointer flex flex-col items-center justify-center text-center select-none',
           isDragActive && 'border-primary-blue bg-slate-50',
           displayError && 'border-red-500 hover:border-red-500 bg-red-50/5',
         )}
@@ -133,7 +157,8 @@ export default function VerificationFileUpload({
             <button
               type="button"
               onClick={removeFile}
-              className="p-1 rounded-full hover:bg-slate-100 text-[#64748B] hover:text-slate-800 transition-colors"
+              aria-label={`Remove ${label}`}
+              className="p-1 rounded-full hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue text-[#64748B] hover:text-slate-800 transition-colors"
             >
               <HugeiconsIcon icon={Cancel01Icon} className="w-3.5 h-3.5" />
             </button>
@@ -152,7 +177,11 @@ export default function VerificationFileUpload({
       </div>
 
       {displayError && (
-        <div className="flex items-center gap-1.5 text-xs text-red-500 font-medium">
+        <div
+          id={`${id}-upload-error`}
+          role="alert"
+          className="flex items-center gap-1.5 text-xs text-red-500 font-medium"
+        >
           <HugeiconsIcon icon={AlertCircleIcon} className="w-3.5 h-3.5" />
           <span>{displayError}</span>
         </div>
