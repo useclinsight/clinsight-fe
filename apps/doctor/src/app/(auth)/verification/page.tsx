@@ -32,7 +32,7 @@ export default function VerificationPage() {
       </p>
 
       {/* Alert Banner */}
-      <div className="w-full flex items-center gap-3 bg-[#FFF9F0] border border-[#FFE8CC]/40 px-4 py-3.5 rounded-xl mt-6">
+      <div className="w-full flex items-center gap-3 bg-[#FFF9F0] border border-[#FFE8CC]/40 px-4 py-3.5 rounded-xl mt-10">
         <HugeiconsIcon icon={InformationCircleIcon} className="w-5 h-5 text-[#D97706] shrink-0" />
         <span className="text-xs md:text-sm font-medium text-[#D97706]">
           Verification usually takes up to 14 days.
@@ -45,9 +45,9 @@ export default function VerificationPage() {
           <div key={index} className="flex items-center gap-3">
             <HugeiconsIcon
               icon={CheckmarkCircle02Icon}
-              className="w-5 h-5 text-[#979C9C]/80 shrink-0"
+              className="w-3 h-3 text-[#979C9C]/80 shrink-0"
             />
-            <span className="text-sm md:text-base font-medium text-[#494949]">{requirement}</span>
+            <span className="text-sm font-normal text-[#494949]">{requirement}</span>
           </div>
         ))}
       </div>

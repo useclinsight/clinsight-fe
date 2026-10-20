@@ -21,6 +21,7 @@ export const pages: { [key: string]: Page[] } = {
       name: 'Messages',
       path: '/user/messages',
       icon: 'Stethoscope02Icon',
+      svg: '/assets/doctor-design/messages-nav.svg',
     },
     {
       name: 'Earnings',

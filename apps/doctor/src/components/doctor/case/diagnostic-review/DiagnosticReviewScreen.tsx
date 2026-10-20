@@ -10,10 +10,10 @@ interface DiagnosticReviewScreenProps {
 
 export default function DiagnosticReviewScreen({ caseId }: DiagnosticReviewScreenProps) {
   return (
-    <div className="w-full min-h-screen flex flex-col px-4 md:px-8 pt-6 pb-8 bg-[#FAFAFA] box-border">
+    <div className="w-full min-h-screen flex flex-col px-2.5 pt-3 pb-8 bg-[#FAFAFA] box-border">
       <nav
         aria-label="breadcrumb"
-        className="flex items-center gap-2 text-sm font-['Inter'] mb-5 select-none shrink-0"
+        className="flex items-center gap-2 pl-2.5 text-sm font-['Inter'] mb-[46px] select-none shrink-0"
       >
         <Link
           href={`/user/case/${caseId}`}
@@ -29,8 +29,8 @@ export default function DiagnosticReviewScreen({ caseId }: DiagnosticReviewScree
         </span>
       </nav>
 
-      <div className="flex flex-col lg:flex-row gap-6 items-stretch w-full flex-1 min-h-0">
-        <div className="w-full lg:w-[380px] flex shrink-0">
+      <div className="flex flex-col lg:flex-row gap-5 items-stretch w-full flex-1 min-h-0">
+        <div className="w-full lg:w-[400px] flex shrink-0">
           <CaseInfoPanel />
         </div>
         <div className="flex-1 flex min-w-0">

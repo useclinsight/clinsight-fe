@@ -41,7 +41,9 @@ export default function Sidebar({
       const isActive =
         pathname === page.path || (page.path !== basePath && pathname.startsWith(`${page.path}/`));
       const baseCls = 'px-2.5 py-3.5 rounded-[8px] transition-colors flex gap-2.5';
-      const activeCls = 'bg-primary-subtle text-primary-blue';
+      const activeCls = pathname.includes('/diagnostic-review')
+        ? 'bg-primary-blue text-white'
+        : 'bg-primary-subtle text-primary-blue';
       const inactiveCls = 'text-text-disabled hover:bg-primary-subtle';
       const PageIcon = iconMap[page.icon] ?? DashboardSquare03Icon;
 

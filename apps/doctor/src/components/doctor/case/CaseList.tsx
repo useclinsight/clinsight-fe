@@ -30,7 +30,7 @@ function EmptyCases({
 }) {
   return (
     <div
-      className={`flex flex-col items-center justify-center px-5 text-center ${filtered ? 'min-h-[350px]' : 'min-h-[65vh]'}`}
+      className={`flex flex-col items-center justify-center px-5 text-center ${filtered ? 'min-h-[350px]' : 'min-h-[calc(100vh-147px)]'}`}
     >
       <div
         className={`flex flex-col items-center gap-[14px] bg-white px-6 pb-14 pt-12 ${filtered ? '' : 'rounded-[20px] border border-[#F0F0F0]'}`}
@@ -98,9 +98,9 @@ export default function CaseList({ cases }: { cases: Case[] }) {
   return (
     <section className="min-h-[65vh] overflow-hidden rounded-2xl border border-[#F0F0F0] bg-white">
       <div className="flex flex-col gap-4 border-b border-[#F0F0F0] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-        <h1 className="text-xl font-medium text-[#1B1B1B]">Cases</h1>
+        <h1 className="text-2xl font-semibold text-[#1B1B1B]">Cases</h1>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-          <label className="relative block sm:w-64 lg:w-[255px]">
+          <label className="relative block sm:w-64 lg:w-[357px]">
             <Search
               size={18}
               className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#767676]"
@@ -131,7 +131,7 @@ export default function CaseList({ cases }: { cases: Case[] }) {
                 setPriority(event.target.value);
                 setPage(1);
               }}
-              className="h-11 w-full appearance-none rounded-lg border border-[#ECECEC] bg-white pl-9 pr-5 text-sm text-[#5E5E5E] outline-none focus:border-primary-blue sm:w-auto"
+              className="h-11 w-full appearance-none rounded-lg border border-[#ECECEC] bg-white pl-9 pr-5 text-sm text-[#5E5E5E] outline-none focus:border-primary-blue sm:w-[104px]"
             >
               <option value="all">Filter</option>
               <option value="high">High priority</option>
@@ -165,7 +165,7 @@ export default function CaseList({ cases }: { cases: Case[] }) {
           <tbody>
             {visibleCases.map((item) => (
               <tr key={item.id} className="border-t border-[#F0F0F0] hover:bg-[#FAFAFA]">
-                <td className="px-5 py-3">
+                <td className="px-5 py-[17px]">
                   <div className="flex items-center gap-2.5">
                     <Image
                       src={item.avatar}
@@ -177,12 +177,12 @@ export default function CaseList({ cases }: { cases: Case[] }) {
                     <span className="text-[#1B1B1B]">{item.patientName}</span>
                   </div>
                 </td>
-                <td className="px-5 py-3 text-[#5E5E5E]">{item.timeAssigned}</td>
-                <td className="px-5 py-3">
+                <td className="px-5 py-[17px] text-[#5E5E5E]">{item.timeAssigned}</td>
+                <td className="px-5 py-[17px]">
                   <PriorityBadge priority={item.priority} />
                 </td>
-                <td className="px-5 py-3 text-[#1B1B1B]">{item.condition}</td>
-                <td className="px-5 py-3 text-right">
+                <td className="px-5 py-[17px] text-[#1B1B1B]">{item.condition}</td>
+                <td className="px-5 py-[17px] text-right">
                   <Link
                     href={`/user/case/${item.id}`}
                     className="inline-flex rounded-lg border border-[#BFD7FF] px-3 py-1.5 text-xs font-medium text-primary-blue hover:bg-[#F0F7FF]"
