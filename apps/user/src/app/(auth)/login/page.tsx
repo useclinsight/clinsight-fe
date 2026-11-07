@@ -9,13 +9,20 @@ export default async function UserLoginPage({
   const { signout } = await searchParams;
   return (
     <main className="min-h-dvh bg-white lg:grid lg:grid-cols-[45%_1fr]">
-      <div className="relative hidden min-h-dvh overflow-hidden bg-slate-800 lg:block">
+      <div className="relative hidden min-h-dvh overflow-hidden bg-slate-100 lg:block">
         <Image
-          src="/assets/login-page-assets/young_black_female_doctor.png"
-          alt="Clinsight"
+          src="/assets/login-page-assets/patient-reviewing-results.webp"
+          alt=""
           fill
           sizes="(min-width: 1024px) 45vw, 1px"
-          className="object-cover object-left-top"
+          className="object-cover object-center"
+        />
+        <Image
+          src="/assets/header-assets/clinsight-logo.svg"
+          alt="Clinsight"
+          width={154}
+          height={40}
+          className="absolute top-10 left-10 h-auto"
         />
       </div>
 
