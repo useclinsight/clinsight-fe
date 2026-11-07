@@ -1,58 +1,33 @@
-'use client';
+import { Card, CardContent, CardDescription, CardHeader } from '@clinsight/ui';
+import { PatientSignInForm } from '@/components/PatientSignInForm';
 
-import Link from 'next/link';
-import {
-  Button,
-  Input,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@clinsight/ui';
-
-export default function UserLoginPage() {
+export default async function UserLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ signout?: string }>;
+}) {
+  const { signout } = await searchParams;
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
-      <Card className="w-full max-w-md shadow-md">
-        <CardHeader className="text-center space-y-1">
-          <div className="mx-auto mb-2 text-2xl font-bold text-[#1565c0]">Clinsight</div>
-          <CardTitle className="text-xl">Sign in to Patient Portal</CardTitle>
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
+      <Card className="w-full max-w-md border-slate-200 shadow-sm">
+        <CardHeader className="space-y-2 text-center">
+          <div className="text-2xl font-bold text-[#1565c0]">Clinsight</div>
+          <h1 className="text-lg font-semibold tracking-tight text-gray-900">
+            Sign in to your patient portal
+          </h1>
           <CardDescription>
-            Enter your email and password to access your health portal.
+            Use the email address and password for your Clinsight patient account.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <label className="text-xs font-medium text-gray-700">Email Address</label>
-            <Input type="email" placeholder="you@example.com" className="mt-1" />
-          </div>
-          <div>
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-gray-700">Password</label>
-              <a href="#" className="text-xs text-[#1565c0] hover:underline">
-                Forgot password?
-              </a>
-            </div>
-            <Input type="password" placeholder="••••••••" className="mt-1" />
-          </div>
-          <Button
-            variant="brand"
-            className="w-full"
-            onClick={() => {
-              window.location.href = '/';
-            }}
-          >
-            Sign In
-          </Button>
-          <div className="text-center text-xs text-gray-500 pt-2">
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="font-semibold text-[#1565c0] hover:underline">
-              Create an account
-            </Link>
-          </div>
+          {signout === 'local' && (
+            <p role="status" className="rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+              You signed out of this browser. We couldn’t confirm that the server session ended.
+            </p>
+          )}
+          <PatientSignInForm />
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }
