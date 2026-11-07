@@ -1,3 +1,4 @@
+import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { PatientAuthHeading } from '@/components/PatientAuthHeading';
@@ -24,8 +25,8 @@ export default async function PatientRecoveryPage({
       {email && step === 'password' ? (
         <>
           <PatientAuthHeading
-            title="Create a new password"
-            description="Choose a new password for your Clinsight patient account."
+            title="Create New Password"
+            description="Choose a new password for your Clinsight account."
           />
           <PatientNewPasswordForm email={email} />
         </>
@@ -44,9 +45,16 @@ export default async function PatientRecoveryPage({
         </>
       ) : (
         <>
+          <Link
+            href="/login"
+            aria-label="Back to sign in"
+            className="-ml-2 mb-3 inline-flex size-11 items-center justify-center rounded-lg text-gray-900 hover:bg-gray-100"
+          >
+            <ChevronLeft aria-hidden="true" className="size-6" />
+          </Link>
           <PatientAuthHeading
-            title="Forgot Password?"
-            description="Enter your email to request a password reset code."
+            title="Forgot Password"
+            description="Enter your email and we will send you an OTP."
           />
           {expired === '1' && (
             <p role="status" className="mt-5 text-sm text-slate-700">
@@ -56,9 +64,10 @@ export default async function PatientRecoveryPage({
           <PatientRecoveryForm />
         </>
       )}
-      <p className="mt-6 text-center text-sm">
+      <p className="mt-6 text-center text-sm text-slate-600">
+        Remember your password?{' '}
         <Link href="/login" className="font-semibold text-primary-blue underline">
-          Back to sign in
+          Log In
         </Link>
       </p>
     </>

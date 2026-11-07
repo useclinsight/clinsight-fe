@@ -31,8 +31,8 @@ export default async function PatientSignupPage({
       ) : (
         <>
           <PatientAuthHeading
-            title="Create your account"
-            description="Sign up to access your health insights."
+            title="Create Account"
+            description="Create your account to get started in minutes"
           />
           <PatientSignupForm />
         </>
@@ -40,7 +40,7 @@ export default async function PatientSignupPage({
       <p className="mt-6 text-center text-sm text-slate-600">
         Already have an account?{' '}
         <Link href="/login" className="font-semibold text-primary-blue underline">
-          Sign in
+          Login
         </Link>
       </p>
     </>

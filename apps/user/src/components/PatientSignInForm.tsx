@@ -2,19 +2,18 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Input } from '@clinsight/ui';
-import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { signIn } from '@/actions/patient-session';
 import { withSessionLock } from '@/lib/browser-session-lock';
 import { patientSignInSchema, type PatientSignIn } from '@/schemas/patient-sign-in';
+import { PatientPasswordInput } from './PatientPasswordInput';
 
 const fieldClass = 'h-[50px] px-4 text-base placeholder:text-gray-500';
 
 export function PatientSignInForm() {
-  const [showPassword, setShowPassword] = useState(false);
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -23,6 +22,8 @@ export function PatientSignInForm() {
     resolver: zodResolver(patientSignInSchema),
     defaultValues: { email: '', password: '' },
   });
+
+  const password = useWatch({ control, name: 'password' });
 
   const submit = handleSubmit(async (values) => {
     try {
@@ -67,35 +68,18 @@ export function PatientSignInForm() {
         <label htmlFor="password" className="text-sm font-medium text-gray-900">
           Password
         </label>
-        <div className="relative">
-          <Input
-            {...register('password')}
-            id="password"
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Enter your password"
-            autoComplete="current-password"
-            required
-            error={!!errors.password}
-            aria-invalid={!!errors.password}
-            aria-describedby={errors.password ? 'password-error' : undefined}
-            className={fieldClass + ' pr-14'}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
-            aria-controls="password"
-            onClick={() => setShowPassword((visible) => !visible)}
-            className="absolute top-1/2 right-1.5 size-11 -translate-y-1/2 rounded-lg text-gray-700"
-          >
-            {showPassword ? (
-              <EyeOff aria-hidden="true" className="size-[18px]" />
-            ) : (
-              <Eye aria-hidden="true" className="size-[18px]" />
-            )}
-          </Button>
-        </div>
+        <PatientPasswordInput
+          {...register('password')}
+          id="password"
+          passwordLabel="Password"
+          placeholder="Enter your password"
+          autoComplete="current-password"
+          required
+          error={!!errors.password}
+          aria-invalid={!!errors.password}
+          aria-describedby={errors.password ? 'password-error' : undefined}
+          className={fieldClass}
+        />
         {errors.password && (
           <p id="password-error" className="text-sm text-red-700">
             {errors.password.message}
@@ -116,8 +100,8 @@ export function PatientSignInForm() {
       <Button
         type="submit"
         variant="brand"
-        className="mt-3 h-[50px] w-full rounded-xl text-base font-semibold"
-        disabled={isSubmitting}
+        className="mt-3 h-[50px] w-full rounded-xl text-base font-semibold disabled:bg-gray-100 disabled:text-gray-500 disabled:opacity-100"
+        disabled={isSubmitting || !password}
       >
         {isSubmitting ? 'Signing in…' : 'Sign in'}
       </Button>

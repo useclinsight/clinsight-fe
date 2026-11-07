@@ -6,19 +6,25 @@ export const passwordHint =
   'Use at least 8 characters, including an uppercase letter, a lowercase letter, a number, and a symbol.';
 
 const symbols = '!@#$%^&*()_+-=[]{}|;\':",./<>?';
+export function getPatientPasswordRules(value: string) {
+  return [
+    { label: 'At least 8 characters', met: value.length >= 8 },
+    { label: 'At least one uppercase letter', met: /\p{Uppercase}/u.test(value) },
+    { label: 'At least one lowercase letter', met: /\p{Lowercase}/u.test(value) },
+    { label: 'At least one number', met: /\p{Decimal_Number}/u.test(value) },
+    {
+      label: 'At least one special character',
+      met: Array.from(value).some((character) => symbols.includes(character)),
+    },
+  ];
+}
+
 const password = z
   .string()
   .min(8, 'Enter at least 8 characters.')
   .max(72, 'Enter 72 characters or fewer.')
   .refine((value) => value === value.trim(), 'Remove spaces from the start and end.')
-  .refine(
-    (value) =>
-      /\p{Uppercase}/u.test(value) &&
-      /\p{Lowercase}/u.test(value) &&
-      /\p{Decimal_Number}/u.test(value) &&
-      Array.from(value).some((character) => symbols.includes(character)),
-    passwordHint,
-  );
+  .refine((value) => getPatientPasswordRules(value).every(({ met }) => met), passwordHint);
 const confirmation = z.string().min(1, 'Confirm your password.');
 const name = z
   .string()
