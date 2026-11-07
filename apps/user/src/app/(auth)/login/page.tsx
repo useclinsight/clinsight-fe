@@ -1,58 +1,45 @@
-'use client';
+import Image from 'next/image';
+import { PatientSignInForm } from '@/components/PatientSignInForm';
 
-import Link from 'next/link';
-import {
-  Button,
-  Input,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@clinsight/ui';
-
-export default function UserLoginPage() {
+export default async function UserLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ signout?: string }>;
+}) {
+  const { signout } = await searchParams;
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
-      <Card className="w-full max-w-md shadow-md">
-        <CardHeader className="text-center space-y-1">
-          <div className="mx-auto mb-2 text-2xl font-bold text-[#1565c0]">Clinsight</div>
-          <CardTitle className="text-xl">Sign in to Patient Portal</CardTitle>
-          <CardDescription>
-            Enter your email and password to access your health portal.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-xs font-medium text-gray-700">Email Address</label>
-            <Input type="email" placeholder="you@example.com" className="mt-1" />
-          </div>
-          <div>
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-gray-700">Password</label>
-              <a href="#" className="text-xs text-[#1565c0] hover:underline">
-                Forgot password?
-              </a>
-            </div>
-            <Input type="password" placeholder="••••••••" className="mt-1" />
-          </div>
-          <Button
-            variant="brand"
-            className="w-full"
-            onClick={() => {
-              window.location.href = '/';
-            }}
-          >
-            Sign In
-          </Button>
-          <div className="text-center text-xs text-gray-500 pt-2">
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="font-semibold text-[#1565c0] hover:underline">
-              Create an account
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <main className="min-h-dvh bg-white lg:grid lg:grid-cols-[45%_1fr]">
+      <div className="relative hidden min-h-dvh overflow-hidden bg-slate-800 lg:block">
+        <Image
+          src="/assets/login-page-assets/young_black_female_doctor.png"
+          alt="Clinsight"
+          fill
+          sizes="(min-width: 1024px) 45vw, 1px"
+          className="object-cover object-left-top"
+        />
+      </div>
+
+      <div className="px-5 pt-[30px] pb-12 sm:px-8 lg:flex lg:items-center lg:justify-center lg:py-10">
+        <div className="mx-auto w-full max-w-105">
+          <Image
+            src="/assets/header-assets/clinsight-logo.svg"
+            alt="Clinsight"
+            width={132}
+            height={34}
+            className="mb-9 h-auto lg:hidden"
+          />
+          <h1 className="text-[32px] leading-[1.14] font-bold tracking-tight text-gray-900 lg:text-[38px]">
+            Welcome Back
+          </h1>
+          <p className="mt-2 text-base text-slate-600">Sign in to access your health insights</p>
+          {signout === 'local' && (
+            <p role="status" className="mt-5 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+              You signed out of this browser. We couldn’t confirm that the server session ended.
+            </p>
+          )}
+          <PatientSignInForm />
+        </div>
+      </div>
+    </main>
   );
 }
