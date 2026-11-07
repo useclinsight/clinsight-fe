@@ -30,7 +30,7 @@ export async function signIn(input: PatientSignIn) {
   }
 
   await writeSessionCookies(result.tokens);
-  redirect('/');
+  return { success: true } as const;
 }
 
 export async function restoreSession(): Promise<'restored' | 'expired' | 'unavailable'> {

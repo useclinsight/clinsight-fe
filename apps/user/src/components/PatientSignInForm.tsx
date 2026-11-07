@@ -28,7 +28,11 @@ export function PatientSignInForm() {
   const submit = handleSubmit(async (values) => {
     try {
       const result = await withSessionLock(() => signIn(values));
-      if (result) setError('root', { message: result.message });
+      if ('message' in result) {
+        setError('root', { message: result.message });
+        return;
+      }
+      window.location.replace('/');
     } catch {
       setError('root', { message: 'Sign-in is temporarily unavailable. Please try again.' });
     }
