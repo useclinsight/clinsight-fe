@@ -23,7 +23,9 @@ const tokensSchema = z.object({
   expires_in: z.number().int().positive(),
 });
 
-const loginResponseSchema = z.object({ data: tokensSchema.extend({ user: patientSchema }) });
+export const patientSessionResponseSchema = z.object({
+  data: tokensSchema.extend({ user: patientSchema }),
+});
 const refreshResponseSchema = z.object({ data: tokensSchema });
 const profileResponseSchema = z.object({ data: patientSchema });
 
@@ -49,8 +51,18 @@ function apiBaseUrl() {
   return url.origin;
 }
 
-function authRequest(
-  endpoint: 'login' | 'me' | 'refresh' | 'logout',
+export function authRequest(
+  endpoint:
+    | 'login'
+    | 'me'
+    | 'refresh'
+    | 'logout'
+    | 'signup'
+    | 'verify-otp'
+    | 'resend-otp'
+    | 'forgot-password'
+    | 'verify-reset-otp'
+    | 'reset-password',
   init?: RequestInit,
 ): Promise<Response> {
   return fetch(`${apiBaseUrl()}/api/v1/auth/${endpoint}`, {
@@ -77,7 +89,7 @@ export async function loginPatient(input: PatientSignIn) {
     if (response.status === 429) return { status: 'limited' } as const;
     if (!response.ok) return { status: 'unavailable' } as const;
 
-    const parsed = loginResponseSchema.safeParse(await response.json());
+    const parsed = patientSessionResponseSchema.safeParse(await response.json());
     if (!parsed.success) return { status: 'unavailable' } as const;
     return { status: 'ok', tokens: parsed.data.data } as const;
   } catch {

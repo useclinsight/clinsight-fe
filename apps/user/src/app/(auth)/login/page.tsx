@@ -1,52 +1,39 @@
-import Image from 'next/image';
+import Link from 'next/link';
+import { PatientAuthHeading } from '@/components/PatientAuthHeading';
 import { PatientSignInForm } from '@/components/PatientSignInForm';
 
 export default async function UserLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ signout?: string }>;
+  searchParams: Promise<{ signout?: string; password?: string }>;
 }) {
-  const { signout } = await searchParams;
+  const { signout, password } = await searchParams;
   return (
-    <main className="min-h-dvh bg-white lg:grid lg:grid-cols-[45%_1fr]">
-      <div className="relative hidden min-h-dvh overflow-hidden bg-slate-100 lg:block">
-        <Image
-          src="/assets/login-page-assets/patient-reviewing-results.webp"
-          alt=""
-          fill
-          sizes="(min-width: 1024px) 45vw, 1px"
-          className="object-cover object-center"
-        />
-        <Image
-          src="/assets/header-assets/clinsight-logo.svg"
-          alt="Clinsight"
-          width={154}
-          height={40}
-          className="absolute top-10 left-10 h-auto"
-        />
-      </div>
-
-      <div className="px-5 pt-[30px] pb-12 sm:px-8 lg:flex lg:items-center lg:justify-center lg:py-10">
-        <div className="mx-auto w-full max-w-105">
-          <Image
-            src="/assets/header-assets/clinsight-logo.svg"
-            alt="Clinsight"
-            width={132}
-            height={34}
-            className="mb-9 h-auto lg:hidden"
-          />
-          <h1 className="text-[32px] leading-[1.14] font-bold tracking-tight text-gray-900 lg:text-[38px]">
-            Welcome Back
-          </h1>
-          <p className="mt-2 text-base text-slate-600">Sign in to access your health insights</p>
-          {signout === 'local' && (
-            <p role="status" className="mt-5 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
-              You signed out of this browser. We couldn’t confirm that the server session ended.
-            </p>
-          )}
-          <PatientSignInForm />
-        </div>
-      </div>
-    </main>
+    <>
+      <PatientAuthHeading
+        title="Welcome Back"
+        description="Sign in to access your health insights"
+      />
+      {signout === 'local' && (
+        <p role="status" className="mt-5 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+          You signed out of this browser. We couldn’t confirm that the server session ended.
+        </p>
+      )}
+      {password === 'updated' && (
+        <p role="status" className="mt-5 rounded-md bg-primary-subtle p-3 text-sm text-slate-700">
+          Your password was updated. Sign in with your new password.
+        </p>
+      )}
+      <PatientSignInForm />
+      <p className="mt-6 text-center text-sm text-slate-600">
+        Don’t have an account?{' '}
+        <Link
+          href="/signup"
+          className="font-semibold text-primary-blue underline underline-offset-2"
+        >
+          Sign Up
+        </Link>
+      </p>
+    </>
   );
 }

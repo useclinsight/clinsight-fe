@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Input } from '@clinsight/ui';
 import { Eye, EyeOff } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { signIn } from '@/actions/patient-session';
@@ -101,6 +102,12 @@ export function PatientSignInForm() {
           </p>
         )}
       </div>
+      <Link
+        href="/forgot-password"
+        className="justify-self-end text-sm text-primary-blue underline underline-offset-2"
+      >
+        Forgot Password?
+      </Link>
       {errors.root?.message && (
         <p role="alert" className="text-sm text-red-700">
           {errors.root.message}
