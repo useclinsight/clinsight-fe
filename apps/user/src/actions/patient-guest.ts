@@ -1,9 +1,15 @@
 'use server';
 
+import { z } from 'zod';
 import { guestUploadEnabled } from '@/lib/guest-upload-config';
 import { apiBaseUrl } from '@/lib/patient-auth-api';
-import { readGuestReview, readGuestSession, startGuestSession } from '@/lib/patient-guest-session';
-import { listLabCases, readLabReview } from '@/lib/patient-lab-api';
+import {
+  readGuestCase,
+  readGuestReview,
+  readGuestSession,
+  startGuestSession,
+} from '@/lib/patient-guest-session';
+import { labApiRequest, listLabCases, readLabReview } from '@/lib/patient-lab-api';
 import { getPatientSession, readSessionCookies } from '@/lib/patient-session';
 import type { LabReview } from '@/lib/lab-review';
 
@@ -54,4 +60,44 @@ export async function loadPatientReview(caseId: string): Promise<LabReview> {
   const { accessToken } = await readSessionCookies();
   if (!accessToken) return { status: 'expired' };
   return readLabReview(caseId, { accessToken });
+}
+
+const chatHistorySchema = z.object({
+  data: z.array(
+    z.object({
+      id: z.uuid(),
+      sender_type: z.enum(['patient', 'ai', 'file']),
+      content: z.object({
+        message: z.string().optional(),
+        text: z.string().optional(),
+        body: z.string().optional(),
+      }),
+    }),
+  ),
+});
+
+export async function loadGuestChatHistory() {
+  if (!guestUploadEnabled() || (await getPatientSession()).status !== 'signed-out') {
+    return { status: 'expired' } as const;
+  }
+
+  try {
+    const result = await readGuestCase();
+    if (result.status !== 'ok') return { status: result.status };
+    const response = await labApiRequest('/cases/' + result.caseId + '/chat', {
+      headers: { 'x-guest-session-id': result.guestId },
+    });
+    if ([401, 403, 404, 410].includes(response.status)) return { status: 'expired' } as const;
+    if (!response.ok) return { status: 'unavailable' } as const;
+
+    const parsed = chatHistorySchema.safeParse(await response.json());
+    if (!parsed.success) return { status: 'unavailable' } as const;
+    const messages = parsed.data.data.flatMap(({ id, sender_type: sender, content }) => {
+      const text = (content.message ?? content.text ?? content.body)?.trim();
+      return sender !== 'file' && text ? [{ id, sender, text }] : [];
+    });
+    return { status: 'ok', messages } as const;
+  } catch {
+    return { status: 'unavailable' } as const;
+  }
 }

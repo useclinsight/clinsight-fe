@@ -47,12 +47,19 @@ export async function startGuestSession() {
   return { status: 'ok', guestId } as const;
 }
 
-export async function readGuestReview(): Promise<LabReview> {
+export async function readGuestCase() {
   const guestId = await readGuestSession();
-  if (!guestId) return { status: 'empty' };
-  const identity = { guestId };
-  const result = await listLabCases(identity);
+  if (!guestId) return { status: 'empty' } as const;
+  const result = await listLabCases({ guestId });
   if (result.status !== 'ok') return { status: result.status };
   const firstCase = result.cases[0];
-  return firstCase ? readLabReview(firstCase.id, identity) : { status: 'empty' };
+  return firstCase
+    ? ({ status: 'ok', guestId, caseId: firstCase.id } as const)
+    : ({ status: 'empty' } as const);
+}
+
+export async function readGuestReview(): Promise<LabReview> {
+  const result = await readGuestCase();
+  if (result.status !== 'ok') return { status: result.status };
+  return readLabReview(result.caseId, { guestId: result.guestId });
 }

@@ -2,12 +2,13 @@
 
 import { Button } from '@clinsight/ui';
 import { Check, Circle, LoaderCircle } from 'lucide-react';
-import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { LabReview } from '@/lib/lab-review';
+import { PatientGuestReviewChat } from './PatientGuestReviewChat';
 
 const pollInterval = 4000;
 const maxPolls = 30;
+const slowPollInterval = 10000;
 
 export function PatientLabReview({
   initialReview,
@@ -28,7 +29,7 @@ export function PatientLabReview({
   }, [guestHeading, review.status]);
 
   useEffect(() => {
-    if (review.status !== 'pending' || paused) return;
+    if (review.status !== 'pending') return;
     let active = true;
     let attempts = 0;
     let timer: ReturnType<typeof setTimeout>;
@@ -46,16 +47,19 @@ export function PatientLabReview({
         return;
       }
       if (result.status === 'pending' && result.phase) setReview(result);
-      if (++attempts >= maxPolls) setPaused(true);
-      else timer = setTimeout(check, pollInterval);
+      if (++attempts >= maxPolls) {
+        setPaused(true);
+        if (!guestHeading) return;
+      }
+      timer = setTimeout(check, attempts >= maxPolls ? slowPollInterval : pollInterval);
     }
 
-    timer = setTimeout(check, pollRun ? 0 : pollInterval);
+    timer = setTimeout(check, guestHeading || pollRun ? 0 : pollInterval);
     return () => {
       active = false;
       clearTimeout(timer);
     };
-  }, [review.status, loadReviewAction, pollRun, paused]);
+  }, [review.status, loadReviewAction, pollRun, guestHeading]);
 
   function retry() {
     setReview((current) => (current.status === 'pending' ? current : { status: 'pending' }));
@@ -77,69 +81,60 @@ export function PatientLabReview({
     );
 
   if (review.status === 'ready') {
-    return (
-      <>
-        {title('Your lab explanation')}
-        <article className="grid gap-5 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-          {review.summary && (
-            <div>
-              <SectionHeading className="text-lg font-semibold">Summary</SectionHeading>
-              <p className="mt-2 leading-relaxed wrap-anywhere whitespace-pre-wrap text-slate-700">
-                {review.summary}
-              </p>
-            </div>
-          )}
-          {review.values.length > 0 && (
-            <div>
-              <SectionHeading className="text-lg font-semibold">Your lab values</SectionHeading>
-              <dl className="mt-2 divide-y divide-gray-200">
-                {review.values.map(({ metric, value, unit, status }, index) => (
-                  <div
-                    key={metric + index}
-                    className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 py-3 text-sm"
-                  >
-                    <dt className="min-w-0 font-medium wrap-anywhere">{metric}</dt>
-                    <dd className="min-w-0 wrap-anywhere text-slate-700">
-                      {[value, unit, status]
-                        .filter((item) => item != null && item !== '')
-                        .join(' · ')}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          )}
-          {guestHeading && review.questions.length > 0 && (
-            <div>
-              <SectionHeading className="text-lg font-semibold">
-                Suggested follow-up questions
-              </SectionHeading>
-              <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-relaxed wrap-anywhere text-slate-700">
-                {review.questions.map((question) => (
-                  <li key={question}>{question}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <p className="rounded-xl bg-primary-subtle p-4 text-sm text-slate-700">
-            This AI explanation is for information only. Discuss your results with a healthcare
-            professional.
-          </p>
-        </article>
-        {guestHeading && (
-          <div className="mt-4 rounded-2xl bg-slate-50 p-4">
-            <SectionHeading className="font-semibold">
-              Keep this result in your account
-            </SectionHeading>
-            <p className="mt-1 text-sm text-slate-600">
-              Create a free Clinsight account to save your report and its explanation.
+    const explanation = (
+      <article className="grid gap-5 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
+        {review.summary && (
+          <div>
+            <SectionHeading className="text-lg font-semibold">Summary</SectionHeading>
+            <p className="mt-2 leading-relaxed wrap-anywhere whitespace-pre-wrap text-slate-700">
+              {review.summary}
             </p>
-            <Button asChild variant="brand" className="mt-3 h-11 rounded-xl">
-              <Link href="/signup?from=guest">Create an account</Link>
-            </Button>
           </div>
         )}
-      </>
+        {review.values.length > 0 && (
+          <div>
+            <SectionHeading className="text-lg font-semibold">Your lab values</SectionHeading>
+            <dl className="mt-2 divide-y divide-gray-200">
+              {review.values.map(({ metric, value, unit, status }, index) => (
+                <div
+                  key={metric + index}
+                  className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 py-3 text-sm"
+                >
+                  <dt className="min-w-0 font-medium wrap-anywhere">{metric}</dt>
+                  <dd className="min-w-0 wrap-anywhere text-slate-700">
+                    {[value, unit, status]
+                      .filter((item) => item != null && item !== '')
+                      .join(' · ')}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        )}
+        {guestHeading && review.questions.length > 0 && (
+          <div>
+            <SectionHeading className="text-lg font-semibold">
+              Suggested follow-up questions
+            </SectionHeading>
+            <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-relaxed wrap-anywhere text-slate-700">
+              {review.questions.map((question) => (
+                <li key={question}>{question}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <p className="rounded-xl bg-primary-subtle p-4 text-sm text-slate-700">
+          This AI explanation is for information only. Discuss your results with a healthcare
+          professional.
+        </p>
+      </article>
+    );
+
+    if (!guestHeading) return explanation;
+    return (
+      <PatientGuestReviewChat heading={title('Chat with Flo')}>
+        {explanation}
+      </PatientGuestReviewChat>
     );
   }
 
@@ -189,7 +184,9 @@ export function PatientLabReview({
             ? 'We’re preparing your lab explanation…'
             : review.status === 'unavailable'
               ? 'We couldn’t load your lab explanation.'
-              : 'Your report is taking longer than expected. You can check again without uploading it again.'}
+              : guestHeading
+                ? 'Your report is taking longer than expected. We’ll keep checking for it here.'
+                : 'Your report is taking longer than expected. You can check again without uploading it again.'}
         </p>
         {!waiting && (
           <Button type="button" variant="outline" className="justify-self-start" onClick={retry}>
