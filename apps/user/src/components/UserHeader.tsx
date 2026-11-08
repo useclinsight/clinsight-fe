@@ -1,43 +1,32 @@
-'use client';
-
-import { Menu, Bell } from 'lucide-react';
+import { PatientSignOutButton } from '@/components/PatientSignOutButton';
 
 interface UserHeaderProps {
-  onMenuToggle: () => void;
+  firstName: string;
+  lastName: string;
 }
 
-export function UserHeader({ onMenuToggle }: UserHeaderProps) {
+export function UserHeader({ firstName, lastName }: UserHeaderProps) {
+  const initials = [firstName, lastName].map((name) => Array.from(name.trim())[0]).join('');
+
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-6">
-      <div className="flex items-center gap-4">
-        <button
-          onClick={onMenuToggle}
-          className="rounded p-1 text-gray-500 hover:text-gray-700 sm:hidden"
-          aria-label="Open menu"
+    <header className="flex min-h-18 items-center justify-between gap-4 border-b border-outline-border bg-white px-5 py-4 md:min-h-23 md:px-10 md:py-5">
+      <h1 className="min-w-0 text-[23px] leading-tight font-semibold tracking-tight [overflow-wrap:anywhere] text-gray-900 md:text-[32px]">
+        Welcome, {firstName}
+      </h1>
+      <div className="hidden max-w-[44%] shrink-0 items-center gap-2.5 md:flex">
+        <span
+          aria-hidden="true"
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-subtle text-[13px] font-semibold text-primary-blue"
         >
-          <Menu className="h-6 w-6" />
-        </button>
-        <h1 className="text-lg font-semibold text-gray-900">Patient Dashboard</h1>
-      </div>
-
-      <div className="flex items-center gap-4">
-        <button
-          className="relative rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-          aria-label="View notifications"
-        >
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-blue-600" />
-        </button>
-
-        <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-[#1565c0]">
-            JD
-          </div>
-          <div className="hidden text-left sm:block">
-            <p className="text-sm font-medium text-gray-900">John Doe</p>
-            <p className="text-xs text-gray-500">Patient</p>
-          </div>
+          {initials.toUpperCase()}
+        </span>
+        <div className="min-w-0 text-sm font-medium [overflow-wrap:anywhere] text-gray-900">
+          {firstName} {lastName}
+          <p className="text-xs font-normal text-slate-600">Patient</p>
         </div>
+      </div>
+      <div className="shrink-0 md:hidden">
+        <PatientSignOutButton />
       </div>
     </header>
   );
