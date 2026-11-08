@@ -3,11 +3,14 @@
 import { Button } from '@clinsight/ui';
 import { X } from 'lucide-react';
 import { Dialog } from 'radix-ui';
+import { useState } from 'react';
 import { PatientGuestUpload } from './PatientGuestUpload';
 
 export function PatientGuestUploadSheet() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog.Root>
+    <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <Button
           variant="outline"
@@ -37,7 +40,7 @@ export function PatientGuestUploadSheet() {
             </Dialog.Close>
           </div>
           <div className="px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))] sm:px-8">
-            <PatientGuestUpload inSheet />
+            <PatientGuestUpload inSheet onReviewStart={() => setOpen(false)} />
           </div>
         </Dialog.Content>
       </Dialog.Portal>

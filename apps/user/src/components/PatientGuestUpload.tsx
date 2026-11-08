@@ -4,26 +4,28 @@ import { Button } from '@clinsight/ui';
 import { FileText, Upload, UploadCloud } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
-import { loadGuestReview, prepareGuestUpload } from '@/actions/patient-guest';
-import { withSessionLock } from '@/lib/browser-session-lock';
+import { loadGuestReview } from '@/actions/patient-guest';
+import { stageGuestChat, stageGuestReviewFile } from '@/lib/guest-review-transfer';
 import { labFileTypes, maxLabFileSize, type LabReview } from '@/lib/lab-review';
-import { PatientLabReview } from './PatientLabReview';
 
 type Selection = { file: File; mimeType: string; preview?: string };
 
 export function PatientGuestUpload({
   initialReview,
   inSheet = false,
+  onReviewStart,
 }: {
   initialReview?: LabReview;
   inSheet?: boolean;
+  onReviewStart?: () => void;
 }) {
+  const router = useRouter();
   const [review, setReview] = useState(initialReview);
   const [selected, setSelected] = useState<Selection>();
   const [message, setMessage] = useState('');
-  const [busy, setBusy] = useState(false);
-  const upload = useRef<AbortController | null>(null);
+  const leaving = useRef(false);
   const filePicker = useRef<HTMLInputElement>(null);
   const previewHeading = useRef<HTMLHeadingElement>(null);
 
@@ -43,22 +45,16 @@ export function PatientGuestUpload({
     };
   }, [initialReview]);
 
-  useEffect(
-    () => () => {
-      upload.current?.abort();
-      upload.current = null;
-    },
-    [],
-  );
-
   useEffect(() => {
     const preview = selected?.preview;
     if (preview) return () => URL.revokeObjectURL(preview);
   }, [selected]);
 
   useEffect(() => {
-    if (inSheet && selected) previewHeading.current?.focus({ preventScroll: true });
-  }, [inSheet, selected]);
+    if (!selected) return;
+    if (inSheet) previewHeading.current?.focus({ preventScroll: true });
+    router.prefetch('/guest/review');
+  }, [inSheet, router, selected]);
 
   function selectFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -81,84 +77,26 @@ export function PatientGuestUpload({
     }
   }
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!selected || upload.current) return;
-    const controller = new AbortController();
-    upload.current = controller;
-    const { signal } = controller;
-    setBusy(true);
-    setMessage('');
-    try {
-      const outcome = await withSessionLock(async () => {
-        if (signal.aborted) return 'cancelled';
-        const prepared = await prepareGuestUpload();
-        if (signal.aborted) return 'cancelled';
-        if (prepared.status === 'existing') return 'accepted';
-        if (prepared.status === 'limited') return 'limited';
-        if (prepared.status !== 'ready') return 'unavailable';
+  function openReview(path: '/guest/review' | '/guest/chat') {
+    if (leaving.current) return;
+    leaving.current = true;
+    onReviewStart?.();
+    router.push(path);
+  }
 
-        const form = new FormData();
-        form.append(
-          'file',
-          new Blob([selected.file], { type: selected.mimeType }),
-          selected.file.name,
-        );
-        const timeout = setTimeout(() => controller.abort(), 120000);
-        try {
-          const response = await fetch(prepared.endpoint, {
-            method: 'POST',
-            headers: { 'x-guest-session-id': prepared.guestId },
-            body: form,
-            credentials: 'omit',
-            redirect: 'error',
-            signal,
-          });
-          if (response.ok) return 'accepted';
-          if (response.status === 429) return 'limited';
-          if (response.status === 400 || response.status === 413 || response.status === 422)
-            return 'invalid';
-          return 'check';
-        } catch {
-          return 'check';
-        } finally {
-          clearTimeout(timeout);
-        }
-      });
-      if (upload.current !== controller || outcome === 'cancelled') return;
-      if (outcome === 'accepted') {
-        setSelected(undefined);
-        setReview({ status: 'pending' });
-        return;
-      }
-      if (outcome === 'check') {
-        const existing = await loadGuestReview();
-        if (upload.current !== controller) return;
-        if (['pending', 'ready', 'failed'].includes(existing.status)) {
-          setSelected(undefined);
-          setReview(existing);
-          return;
-        }
-      }
-      const errors = {
-        limited: 'Too many attempts. Please wait a moment and try again.',
-        invalid:
-          'The upload was rejected. Check that your report is a supported file and no larger than 10 MB.',
-        unavailable: 'We couldn’t start a guest upload. Your selected file is still here.',
-        check:
-          'We couldn’t confirm the upload. Try again to check for the result before sending another copy.',
-      };
-      setMessage(errors[outcome]);
-    } catch {
-      if (upload.current !== controller) return;
-      setMessage(
-        'We couldn’t upload your report. Your selected file is still here. Please try again.',
-      );
-    } finally {
-      if (upload.current === controller) {
-        upload.current = null;
-        setBusy(false);
-      }
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selected || leaving.current) return;
+    stageGuestReviewFile({ file: selected.file, mimeType: selected.mimeType });
+    openReview('/guest/review');
+  }
+
+  function resume() {
+    if (review?.status === 'ready') {
+      stageGuestChat(review);
+      openReview('/guest/chat');
+    } else {
+      openReview('/guest/review');
     }
   }
 
@@ -220,14 +158,16 @@ export function PatientGuestUpload({
 
   if (hasReview) {
     return (
-      <>
+      <div className="mx-auto max-w-md text-center">
         {backLink}
-        <PatientLabReview
-          initialReview={review}
-          loadReviewAction={loadGuestReview}
-          guestHeading={Heading}
-        />
-      </>
+        <Heading className="text-xl font-semibold tracking-tight text-gray-900 sm:text-2xl">
+          Your guest review
+        </Heading>
+        <p className="mt-2 text-sm text-slate-600">Continue where you left off.</p>
+        <Button type="button" variant="brand" className="mt-5 h-12 rounded-xl" onClick={resume}>
+          Continue to review
+        </Button>
+      </div>
     );
   }
 
@@ -246,7 +186,7 @@ export function PatientGuestUpload({
     return (
       <>
         {backLink}
-        <form method="post" onSubmit={submit} aria-busy={busy} className="grid gap-4">
+        <form method="post" onSubmit={submit} className="grid gap-4">
           <div>
             <Heading
               ref={previewHeading}
@@ -291,21 +231,16 @@ export function PatientGuestUpload({
               {message}
             </p>
           )}
-          {busy && (
-            <p role="status" className="text-sm text-slate-700">
-              Uploading your report…
-            </p>
-          )}
-          <input {...fileInputProps} ref={filePicker} hidden disabled={busy} />
+
+          <input {...fileInputProps} ref={filePicker} hidden />
           <div className="grid gap-2 sm:grid-cols-2">
-            <Button type="submit" variant="brand" className="h-12 rounded-xl" disabled={busy}>
+            <Button type="submit" variant="brand" className="h-12 rounded-xl">
               Get AI review
             </Button>
             <Button
               type="button"
               variant="outline"
               className="h-12 rounded-xl"
-              disabled={busy}
               onClick={() => filePicker.current?.click()}
             >
               Choose another file

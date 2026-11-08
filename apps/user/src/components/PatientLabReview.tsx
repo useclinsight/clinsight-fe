@@ -14,15 +14,21 @@ export function PatientLabReview({
   initialReview,
   loadReviewAction,
   guestHeading,
+  onGuestReady,
 }: {
   initialReview: LabReview;
   loadReviewAction: () => Promise<LabReview>;
   guestHeading?: 'h1' | 'h2';
+  onGuestReady?: (review: Extract<LabReview, { status: 'ready' }>) => void;
 }) {
   const [review, setReview] = useState(initialReview);
   const [pollRun, setPollRun] = useState(0);
   const [paused, setPaused] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (review.status === 'ready') onGuestReady?.(review);
+  }, [onGuestReady, review]);
 
   useEffect(() => {
     if (guestHeading) headingRef.current?.focus({ preventScroll: true });
@@ -81,11 +87,22 @@ export function PatientLabReview({
     );
 
   if (review.status === 'ready') {
+    if (onGuestReady)
+      return (
+        <p role="status" className="text-sm text-slate-700">
+          Opening chat…
+        </p>
+      );
     const explanation = (
       <article className="grid gap-5 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
+        {guestHeading && (
+          <SectionHeading className="text-xl font-semibold">Flo’s review</SectionHeading>
+        )}
         {review.summary && (
-          <div>
-            <SectionHeading className="text-lg font-semibold">Summary</SectionHeading>
+          <div className={guestHeading ? 'rounded-xl bg-primary-subtle p-4' : undefined}>
+            <SectionHeading className="text-lg font-semibold">
+              {guestHeading ? 'Key takeaway' : 'Summary'}
+            </SectionHeading>
             <p className="mt-2 leading-relaxed wrap-anywhere whitespace-pre-wrap text-slate-700">
               {review.summary}
             </p>
@@ -131,11 +148,7 @@ export function PatientLabReview({
     );
 
     if (!guestHeading) return explanation;
-    return (
-      <PatientGuestReviewChat heading={title('Chat with Flo')}>
-        {explanation}
-      </PatientGuestReviewChat>
-    );
+    return <PatientGuestReviewChat headingRef={headingRef}>{explanation}</PatientGuestReviewChat>;
   }
 
   if (review.status === 'failed') {
@@ -258,7 +271,7 @@ function GuestReviewProgress({ phase }: { phase?: 'reading' | 'explaining' }) {
         })}
       </ol>
       <p className="mt-4 text-sm text-slate-600">
-        You can close this and reopen Continue as guest to check your result.
+        To check your result later, return to the welcome page and select Continue as guest.
       </p>
     </div>
   );
