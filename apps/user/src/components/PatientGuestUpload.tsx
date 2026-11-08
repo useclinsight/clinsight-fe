@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@clinsight/ui';
-import { FileText, UploadCloud } from 'lucide-react';
+import { FileText, Upload, UploadCloud } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
@@ -24,6 +24,8 @@ export function PatientGuestUpload({
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const upload = useRef<AbortController | null>(null);
+  const sheetFileInput = useRef<HTMLInputElement>(null);
+  const previewHeading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     if (initialReview) return;
@@ -53,6 +55,10 @@ export function PatientGuestUpload({
     const preview = selected?.preview;
     if (preview) return () => URL.revokeObjectURL(preview);
   }, [selected]);
+
+  useEffect(() => {
+    if (inSheet && selected) previewHeading.current?.focus({ preventScroll: true });
+  }, [inSheet, selected]);
 
   function selectFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -166,6 +172,43 @@ export function PatientGuestUpload({
 
   const hasReview = ['ready', 'pending', 'failed', 'unavailable'].includes(review.status);
   const Heading = inSheet ? 'h2' : 'h1';
+  const fileInputProps = {
+    type: 'file',
+    accept: '.pdf,.jpg,.jpeg,.png',
+    onChange: selectFile,
+  } as const;
+
+  if (inSheet && !hasReview && !selected) {
+    return (
+      <div className="mx-auto max-w-md text-center">
+        <h2 className="text-xl font-semibold tracking-tight text-gray-900 sm:text-2xl">
+          Upload Your Lab Result
+        </h2>
+        <p className="mt-2 text-sm text-slate-700 sm:text-base">
+          Upload a lab report to get started
+        </p>
+        <p id="lab-report-hint" className="mt-2 text-sm text-slate-600">
+          JPEG, PDF, and PNG up to 10 MB
+        </p>
+        <input {...fileInputProps} ref={sheetFileInput} hidden />
+        {message && (
+          <p role="alert" className="mt-3 text-sm text-red-700">
+            {message}
+          </p>
+        )}
+        <Button
+          type="button"
+          variant="brand"
+          aria-describedby="lab-report-hint"
+          className="mt-5 h-12 gap-2 rounded-xl px-6 text-base"
+          onClick={() => sheetFileInput.current?.click()}
+        >
+          <Upload aria-hidden="true" className="size-5" />
+          Upload Result
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -178,8 +221,16 @@ export function PatientGuestUpload({
             Back to welcome
           </Link>
         )}
-        <Heading className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">
-          {hasReview ? 'Your lab explanation' : 'Upload your lab report'}
+        <Heading
+          ref={previewHeading}
+          tabIndex={inSheet && selected ? -1 : undefined}
+          className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 outline-none"
+        >
+          {hasReview
+            ? 'Your lab explanation'
+            : inSheet
+              ? 'Review your lab report'
+              : 'Upload your lab report'}
         </Heading>
         {!hasReview && (
           <p className="mt-2 text-slate-600">Get a clear explanation with one free guest upload.</p>
@@ -214,11 +265,9 @@ export function PatientGuestUpload({
             </label>
             <input
               id="lab-report"
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
+              {...fileInputProps}
               aria-describedby="lab-report-hint"
               disabled={busy}
-              onChange={selectFile}
               className="max-w-full cursor-pointer rounded-md text-sm text-slate-700 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary-subtle file:px-4 file:py-2.5 file:font-medium file:text-primary-blue"
             />
             <p id="lab-report-hint" className="text-sm text-slate-600">
