@@ -4,6 +4,7 @@ import { Button } from '@clinsight/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
+import { PatientGuestUploadSheet } from './PatientGuestUploadSheet';
 import { PatientLegalLinks } from './PatientLegalLinks';
 
 const slides = [
@@ -86,15 +87,7 @@ export function PatientWelcome({ guestEnabled }: { guestEnabled: boolean }) {
               <Button asChild variant="brand" className="h-12 rounded-xl text-base">
                 <Link href="/signup">Get started</Link>
               </Button>
-              {guestEnabled && (
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-12 rounded-xl border-gray-300 bg-white text-base text-gray-800"
-                >
-                  <Link href="/guest/upload">Continue as guest</Link>
-                </Button>
-              )}
+              {guestEnabled && <PatientGuestUploadSheet />}
             </div>
             <p className="mt-4 text-center text-sm text-slate-600">
               Already have an account?{' '}

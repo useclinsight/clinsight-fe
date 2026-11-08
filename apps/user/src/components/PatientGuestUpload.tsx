@@ -12,12 +12,42 @@ import { PatientLabReview } from './PatientLabReview';
 
 type Selection = { file: File; mimeType: string; preview?: string };
 
-export function PatientGuestUpload({ initialReview }: { initialReview: LabReview }) {
+export function PatientGuestUpload({
+  initialReview,
+  inSheet = false,
+}: {
+  initialReview?: LabReview;
+  inSheet?: boolean;
+}) {
   const [review, setReview] = useState(initialReview);
   const [selected, setSelected] = useState<Selection>();
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
-  const uploading = useRef(false);
+  const upload = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (initialReview) return;
+    let active = true;
+    loadGuestReview().then(
+      (result) => {
+        if (active) setReview(result);
+      },
+      () => {
+        if (active) setReview({ status: 'unavailable' });
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [initialReview]);
+
+  useEffect(
+    () => () => {
+      upload.current?.abort();
+      upload.current = null;
+    },
+    [],
+  );
 
   useEffect(() => {
     const preview = selected?.preview;
@@ -48,13 +78,17 @@ export function PatientGuestUpload({ initialReview }: { initialReview: LabReview
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selected || uploading.current) return;
-    uploading.current = true;
+    if (!selected || upload.current) return;
+    const controller = new AbortController();
+    upload.current = controller;
+    const { signal } = controller;
     setBusy(true);
     setMessage('');
     try {
       const outcome = await withSessionLock(async () => {
+        if (signal.aborted) return 'cancelled';
         const prepared = await prepareGuestUpload();
+        if (signal.aborted) return 'cancelled';
         if (prepared.status === 'existing') return 'accepted';
         if (prepared.status === 'limited') return 'limited';
         if (prepared.status !== 'ready') return 'unavailable';
@@ -65,6 +99,7 @@ export function PatientGuestUpload({ initialReview }: { initialReview: LabReview
           new Blob([selected.file], { type: selected.mimeType }),
           selected.file.name,
         );
+        const timeout = setTimeout(() => controller.abort(), 120000);
         try {
           const response = await fetch(prepared.endpoint, {
             method: 'POST',
@@ -72,7 +107,7 @@ export function PatientGuestUpload({ initialReview }: { initialReview: LabReview
             body: form,
             credentials: 'omit',
             redirect: 'error',
-            signal: AbortSignal.timeout(120000),
+            signal,
           });
           if (response.ok) return 'accepted';
           if (response.status === 429) return 'limited';
@@ -81,8 +116,11 @@ export function PatientGuestUpload({ initialReview }: { initialReview: LabReview
           return 'check';
         } catch {
           return 'check';
+        } finally {
+          clearTimeout(timeout);
         }
       });
+      if (upload.current !== controller || outcome === 'cancelled') return;
       if (outcome === 'accepted') {
         setSelected(undefined);
         setReview({ status: 'pending' });
@@ -90,6 +128,7 @@ export function PatientGuestUpload({ initialReview }: { initialReview: LabReview
       }
       if (outcome === 'check') {
         const existing = await loadGuestReview();
+        if (upload.current !== controller) return;
         if (['pending', 'ready', 'failed'].includes(existing.status)) {
           setSelected(undefined);
           setReview(existing);
@@ -106,29 +145,42 @@ export function PatientGuestUpload({ initialReview }: { initialReview: LabReview
       };
       setMessage(errors[outcome]);
     } catch {
+      if (upload.current !== controller) return;
       setMessage(
         'We couldn’t upload your report. Your selected file is still here. Please try again.',
       );
     } finally {
-      uploading.current = false;
-      setBusy(false);
+      if (upload.current === controller) {
+        upload.current = null;
+        setBusy(false);
+      }
     }
   }
 
+  if (!review)
+    return (
+      <p role="status" className="py-4 text-slate-700">
+        Checking your guest session…
+      </p>
+    );
+
   const hasReview = ['ready', 'pending', 'failed', 'unavailable'].includes(review.status);
+  const Heading = inSheet ? 'h2' : 'h1';
 
   return (
     <>
       <div className="mb-6">
-        <Link
-          href="/"
-          className="text-sm font-medium text-primary-blue underline underline-offset-2"
-        >
-          Back to welcome
-        </Link>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">
+        {!inSheet && (
+          <Link
+            href="/"
+            className="text-sm font-medium text-primary-blue underline underline-offset-2"
+          >
+            Back to welcome
+          </Link>
+        )}
+        <Heading className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">
           {hasReview ? 'Your lab explanation' : 'Upload your lab report'}
-        </h1>
+        </Heading>
         {!hasReview && (
           <p className="mt-2 text-slate-600">Get a clear explanation with one free guest upload.</p>
         )}
