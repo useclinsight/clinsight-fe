@@ -11,10 +11,12 @@ const caseListSchema = z.object({
 const reviewSchema = z.object({
   data: z.object({
     case: z.object({ status: z.string() }),
+    lab_results: z.array(z.object({ ocr_status: z.string() })).optional(),
     interpretation: z
       .object({
         status: z.string(),
         summary: z.string().nullish(),
+        suggested_questions: z.array(z.string()).nullish(),
         value_breakdown: z
           .array(
             z.object({
@@ -77,14 +79,31 @@ export async function readLabReview(caseId: string, identity: Identity): Promise
     const parsed = reviewSchema.safeParse(await response.json());
     if (!parsed.success) return { status: 'unavailable' };
 
-    const { case: labCase, interpretation } = parsed.data.data;
+    const { case: labCase, lab_results: labs, interpretation } = parsed.data.data;
     if (labCase.status === 'failed' || interpretation?.status === 'failed') {
       return { status: 'failed' };
     }
     if (interpretation && ['complete', 'completed'].includes(interpretation.status)) {
       const summary = interpretation.summary?.trim() || null;
       const values = interpretation.value_breakdown ?? [];
-      if (summary || values.length) return { status: 'ready', summary, values };
+      if (summary || values.length) {
+        const questions = [
+          ...new Set(
+            interpretation.suggested_questions?.map((question) => question.trim()).filter(Boolean),
+          ),
+        ].slice(0, 4);
+        return { status: 'ready', summary, values, questions };
+      }
+    }
+    if (
+      interpretation?.status === 'processing' ||
+      (labs?.length &&
+        labs.every((lab) => lab.ocr_status === 'complete' || lab.ocr_status === 'completed'))
+    ) {
+      return { status: 'pending', phase: 'explaining' };
+    }
+    if (labs?.some((lab) => lab.ocr_status === 'processing')) {
+      return { status: 'pending', phase: 'reading' };
     }
     return { status: 'pending' };
   } catch {

@@ -24,7 +24,7 @@ export function PatientGuestUpload({
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const upload = useRef<AbortController | null>(null);
-  const sheetFileInput = useRef<HTMLInputElement>(null);
+  const filePicker = useRef<HTMLInputElement>(null);
   const previewHeading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -65,7 +65,6 @@ export function PatientGuestUpload({
     event.target.value = '';
     if (!file) return;
 
-    setSelected(undefined);
     setMessage('');
     const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
     const mimeType = Object.hasOwn(labFileTypes, extension) ? labFileTypes[extension] : undefined;
@@ -190,7 +189,7 @@ export function PatientGuestUpload({
         <p id="lab-report-hint" className="mt-2 text-sm text-slate-600">
           JPEG, PDF, and PNG up to 10 MB
         </p>
-        <input {...fileInputProps} ref={sheetFileInput} hidden />
+        <input {...fileInputProps} ref={filePicker} hidden />
         {message && (
           <p role="alert" className="mt-3 text-sm text-red-700">
             {message}
@@ -201,7 +200,7 @@ export function PatientGuestUpload({
           variant="brand"
           aria-describedby="lab-report-hint"
           className="mt-5 h-12 gap-2 rounded-xl px-6 text-base"
-          onClick={() => sheetFileInput.current?.click()}
+          onClick={() => filePicker.current?.click()}
         >
           <Upload aria-hidden="true" className="size-5" />
           Upload result
@@ -210,93 +209,83 @@ export function PatientGuestUpload({
     );
   }
 
-  return (
-    <>
-      <div className="mb-6">
-        {!inSheet && (
-          <Link
-            href="/"
-            className="text-sm font-medium text-primary-blue underline underline-offset-2"
-          >
-            Back to welcome
-          </Link>
-        )}
-        <Heading
-          ref={previewHeading}
-          tabIndex={inSheet && selected ? -1 : undefined}
-          className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 outline-none"
-        >
-          {hasReview
-            ? 'Your lab explanation'
-            : inSheet
-              ? 'Review your lab report'
-              : 'Upload your lab report'}
-        </Heading>
-        {!hasReview && (
-          <p className="mt-2 text-slate-600">Get a clear explanation with one free guest upload.</p>
-        )}
-      </div>
-      {hasReview ? (
-        <>
-          <PatientLabReview initialReview={review} loadReviewAction={loadGuestReview} />
-          {['pending', 'ready'].includes(review.status) && (
-            <div className="mt-5 rounded-2xl border border-gray-200 p-5">
-              <p className="font-medium">Keep this result in your account</p>
-              <p className="mt-1 text-sm text-slate-600">
-                Create a free Clinsight account to save your report and its explanation.
-              </p>
-              <Button asChild variant="brand" className="mt-4 rounded-xl">
-                <Link href="/signup?from=guest">Create an account</Link>
-              </Button>
-            </div>
-          )}
-        </>
-      ) : (
-        <form
-          method="post"
-          onSubmit={submit}
-          aria-busy={busy}
-          className="grid gap-4 rounded-2xl border border-gray-200 p-5 sm:p-7"
-        >
-          <div className="grid justify-items-start gap-2">
-            <UploadCloud aria-hidden="true" className="size-6 text-primary-blue" />
-            <label htmlFor="lab-report" className="font-semibold">
-              Choose a lab report
-            </label>
-            <input
-              id="lab-report"
-              {...fileInputProps}
-              aria-describedby="lab-report-hint"
-              disabled={busy}
-              className="max-w-full cursor-pointer rounded-md text-sm text-slate-700 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary-subtle file:px-4 file:py-2.5 file:font-medium file:text-primary-blue"
-            />
-            <p id="lab-report-hint" className="text-sm text-slate-600">
-              PDF, JPG, JPEG, or PNG. Maximum 10 MB.
+  const backLink = !inSheet && (
+    <Link
+      href="/"
+      className="mb-4 inline-block text-sm font-medium text-primary-blue underline underline-offset-2"
+    >
+      Back to welcome
+    </Link>
+  );
+
+  if (hasReview) {
+    return (
+      <>
+        {backLink}
+        <PatientLabReview
+          initialReview={review}
+          loadReviewAction={loadGuestReview}
+          guestHeading={Heading}
+        />
+      </>
+    );
+  }
+
+  if (selected) {
+    const format =
+      selected.mimeType === 'application/pdf'
+        ? 'PDF'
+        : selected.mimeType === 'image/png'
+          ? 'PNG'
+          : 'JPEG';
+    const size =
+      selected.file.size >= 1024 * 1024
+        ? (selected.file.size / (1024 * 1024)).toFixed(2) + ' MB'
+        : Math.max(1, Math.round(selected.file.size / 1024)) + ' KB';
+
+    return (
+      <>
+        {backLink}
+        <form method="post" onSubmit={submit} aria-busy={busy} className="grid gap-4">
+          <div>
+            <Heading
+              ref={previewHeading}
+              tabIndex={inSheet ? -1 : undefined}
+              className="text-2xl font-semibold tracking-tight text-gray-900 outline-none sm:text-3xl"
+            >
+              File preview
+            </Heading>
+            <p className="mt-1 text-sm text-slate-600">
+              Check that this is the lab report you want to review.
             </p>
           </div>
-          {selected && (
-            <div className="grid gap-3 rounded-xl bg-slate-50 p-4">
-              <div className="flex items-center gap-3">
-                <FileText aria-hidden="true" className="size-5 shrink-0 text-primary-blue" />
-                <div className="min-w-0">
-                  <p className="font-medium break-all">{selected.file.name}</p>
-                  <p className="text-sm text-slate-600">
-                    {(selected.file.size / 1024 / 1024).toFixed(2)} MB
-                  </p>
-                </div>
-              </div>
-              {selected.preview && (
+          <div className="grid min-w-0 gap-3 rounded-2xl border border-gray-200 p-4">
+            <div className="min-w-0">
+              <p className="font-medium break-all text-gray-900">{selected.file.name}</p>
+              <p className="mt-0.5 text-sm text-slate-600">
+                {format} · {size}
+              </p>
+            </div>
+            <div className="grid min-h-26 place-items-center rounded-xl bg-slate-50 p-3">
+              {selected.preview ? (
                 <Image
                   src={selected.preview}
                   alt="Selected lab report preview"
                   width={360}
                   height={240}
                   unoptimized
-                  className="max-h-60 w-full object-contain"
+                  className="h-auto max-h-[min(26dvh,13rem)] w-full object-contain"
                 />
+              ) : (
+                <div className="grid justify-items-center gap-2 py-2 text-sm text-slate-600">
+                  <span className="grid size-11 place-items-center rounded-xl bg-primary-subtle text-primary-blue">
+                    <FileText aria-hidden="true" className="size-6" />
+                  </span>
+                  PDF selected
+                </div>
               )}
             </div>
-          )}
+          </div>
           {message && (
             <p role="alert" className="text-sm text-red-700">
               {message}
@@ -307,16 +296,53 @@ export function PatientGuestUpload({
               Uploading your report…
             </p>
           )}
-          <Button
-            type="submit"
-            variant="brand"
-            className="h-12 rounded-xl"
-            disabled={!selected || busy}
-          >
-            Upload and get explanation
-          </Button>
+          <input {...fileInputProps} ref={filePicker} hidden disabled={busy} />
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button type="submit" variant="brand" className="h-12 rounded-xl" disabled={busy}>
+              Get AI review
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-12 rounded-xl"
+              disabled={busy}
+              onClick={() => filePicker.current?.click()}
+            >
+              Choose another file
+            </Button>
+          </div>
         </form>
-      )}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {backLink}
+      <Heading className="text-3xl font-semibold tracking-tight text-gray-900">
+        Upload your lab report
+      </Heading>
+      <p className="mt-2 text-slate-600">Get a clear explanation with one free guest upload.</p>
+      <div className="mt-6 grid justify-items-start gap-2 rounded-2xl border border-gray-200 p-5 sm:p-7">
+        <UploadCloud aria-hidden="true" className="size-6 text-primary-blue" />
+        <label htmlFor="lab-report" className="font-semibold">
+          Choose a lab report
+        </label>
+        <input
+          id="lab-report"
+          {...fileInputProps}
+          aria-describedby="lab-report-hint"
+          className="max-w-full cursor-pointer rounded-md text-sm text-slate-700 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary-subtle file:px-4 file:py-2.5 file:font-medium file:text-primary-blue"
+        />
+        <p id="lab-report-hint" className="text-sm text-slate-600">
+          PDF, JPG, JPEG, or PNG. Maximum 10 MB.
+        </p>
+        {message && (
+          <p role="alert" className="text-sm text-red-700">
+            {message}
+          </p>
+        )}
+      </div>
     </>
   );
 }

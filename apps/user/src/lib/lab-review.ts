@@ -1,8 +1,10 @@
 export type LabReview =
-  | { status: 'empty' | 'pending' | 'failed' | 'unavailable' | 'expired' }
+  | { status: 'empty' | 'failed' | 'unavailable' | 'expired' }
+  | { status: 'pending'; phase?: 'reading' | 'explaining' }
   | {
       status: 'ready';
       summary: string | null;
+      questions: string[];
       values: {
         metric: string;
         value: string | number;
