@@ -32,7 +32,7 @@ const profileResponseSchema = z.object({ data: patientSchema });
 export type Patient = z.infer<typeof patientSchema>;
 export type PatientTokens = z.infer<typeof tokensSchema>;
 
-function apiBaseUrl() {
+export function apiBaseUrl() {
   const url = new URL(process.env.API_BASE_URL ?? '');
   const isLocalDevelopment =
     process.env.NODE_ENV === 'development' && ['localhost', '127.0.0.1'].includes(url.hostname);

@@ -12,7 +12,7 @@ export function UserSidebar() {
 
   return (
     <aside className="hidden flex-col border-r border-outline-border bg-white px-4 py-6 md:flex">
-      <Link href="/" className="mb-13 ml-2 inline-flex self-start rounded-md">
+      <Link href="/dashboard" className="mb-13 ml-2 inline-flex self-start rounded-md">
         <Image
           src="/assets/header-assets/clinsight-logo.svg"
           alt="Clinsight"
@@ -22,7 +22,7 @@ export function UserSidebar() {
       </Link>
       <nav aria-label="Patient portal">
         <Link
-          href="/"
+          href="/dashboard"
           aria-current={isOverview ? 'page' : undefined}
           className={cn(
             'flex items-center gap-2.5 rounded-lg px-2.5 py-3 text-sm font-semibold',

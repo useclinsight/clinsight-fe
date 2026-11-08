@@ -7,11 +7,15 @@ import {
   clearEmailFlow,
   readFlowEmail,
   readResetGrant,
+  readSignupGuest,
   resetGrantSchema,
   storeResetGrant,
   type EmailFlow,
 } from '@/lib/patient-account-flow';
 import { authRequest, patientSessionResponseSchema } from '@/lib/patient-auth-api';
+import { guestUploadEnabled } from '@/lib/guest-upload-config';
+import { clearGuestSession, readGuestSession } from '@/lib/patient-guest-session';
+import { listLabCases } from '@/lib/patient-lab-api';
 import { writeSessionCookies } from '@/lib/patient-session';
 import {
   emailCodeSchema,
@@ -33,11 +37,14 @@ const invalidCode = {
   message: 'That code is incorrect or expired. Try again or request a new code.',
 };
 
-async function submit(endpoint: AccountEndpoint, body: object) {
+async function submit(endpoint: AccountEndpoint, body: object, guestId?: string) {
   try {
     return await authRequest(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(guestId && { 'x-guest-session-id': guestId }),
+      },
       body: JSON.stringify(body),
     });
   } catch {
@@ -52,7 +59,7 @@ function failure(response: Response | null, invalid: { message: string }) {
     : unavailable;
 }
 
-export async function signUpPatient(input: unknown) {
+export async function signUpPatient(input: unknown, fromGuest: boolean) {
   const parsed = signupSchema.safeParse(input);
   if (!parsed.success) return { message: 'Check the account details and password requirements.' };
   const response = await submit('signup', parsed.data);
@@ -62,31 +69,54 @@ export async function signUpPatient(input: unknown) {
   if (!response?.ok)
     return failure(response, { message: 'Check the account details and try again.' });
 
-  await beginEmailFlow('signup', parsed.data.email);
-  redirect('/signup?step=verify');
+  const claimRequested = fromGuest === true && guestUploadEnabled();
+  const guestId = claimRequested ? await readGuestSession() : undefined;
+  await beginEmailFlow('signup', parsed.data.email, guestId ?? null);
+  return {
+    destination: claimRequested ? '/signup?step=verify&from=guest' : '/signup?step=verify',
+  } as const;
 }
 
-export async function verifyPatientEmail(input: unknown, expectedEmail: string) {
+export async function verifyPatientEmail(
+  input: unknown,
+  expectedEmail: string,
+  fromGuest: boolean,
+) {
   const email = await readFlowEmail('signup');
   if (!email || email !== expectedEmail) return expired;
   const parsed = emailCodeSchema.safeParse(input);
   if (!parsed.success) return invalidCode;
 
-  const response = await submit('verify-otp', {
-    email,
-    code: parsed.data.code,
-    purpose: 'email_verification',
-    role: 'patient',
-    platform: 'web',
-    device_id: randomUUID(),
-  });
+  const claimRequested = fromGuest === true && guestUploadEnabled();
+  const signupGuest = claimRequested ? await readSignupGuest() : undefined;
+  const guestId =
+    signupGuest && signupGuest === (await readGuestSession()) ? signupGuest : undefined;
+  const response = await submit(
+    'verify-otp',
+    {
+      email,
+      code: parsed.data.code,
+      purpose: 'email_verification',
+      role: 'patient',
+      platform: 'web',
+      device_id: randomUUID(),
+    },
+    guestId,
+  );
   if (!response?.ok) return failure(response, invalidCode);
   const session = patientSessionResponseSchema.safeParse(await response.json().catch(() => null));
   if (!session.success) return unavailable;
 
   await writeSessionCookies(session.data.data);
   await clearEmailFlow('signup');
-  redirect('/');
+  if (guestId) {
+    const records = await listLabCases({ accessToken: session.data.data.access_token });
+    if (records.status === 'ok' && records.cases.length > 0) {
+      await clearGuestSession();
+      return { destination: '/records' } as const;
+    }
+  }
+  return { destination: claimRequested ? '/records?guest=unconfirmed' : '/dashboard' } as const;
 }
 
 export async function requestPatientReset(input: unknown) {
@@ -112,7 +142,7 @@ export async function resendPatientCode(flow: EmailFlow, expectedEmail: string) 
   if (!response?.ok)
     return failure(response, { message: 'We couldn’t send a code. Start again or sign in.' });
 
-  await beginEmailFlow(flow, email);
+  await beginEmailFlow(flow, email, flow === 'signup' ? await readSignupGuest() : undefined);
   return {
     success: true,
     message:

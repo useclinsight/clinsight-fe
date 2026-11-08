@@ -11,8 +11,57 @@ import {
   TableCell,
 } from '@clinsight/ui';
 import { UploadCloud, FileText, Download, Eye } from 'lucide-react';
+import Link from 'next/link';
+import { guestUploadEnabled } from '@/lib/guest-upload-config';
+import { listLabCases } from '@/lib/patient-lab-api';
+import { getPatientSession, readSessionCookies } from '@/lib/patient-session';
 
-export default function LabRecordsPage() {
+export default async function LabRecordsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ guest?: string }>;
+}) {
+  if (!guestUploadEnabled()) return <LabRecordsPreview />;
+  if ((await getPatientSession()).status !== 'ok') return null;
+  const { accessToken } = await readSessionCookies();
+  if (!accessToken) return null;
+  const [records, { guest }] = await Promise.all([listLabCases({ accessToken }), searchParams]);
+
+  return (
+    <section className="max-w-3xl space-y-4">
+      <h2 className="text-2xl font-bold tracking-tight text-gray-900">Lab Records & Results</h2>
+      {guest === 'unconfirmed' && (
+        <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+          Your account is ready. We couldn’t confirm that your guest report was saved.
+        </p>
+      )}
+      {records.status !== 'ok' ? (
+        <p role="alert" className="text-slate-700">
+          We couldn’t load your lab reports. Refresh to try again.
+        </p>
+      ) : records.cases.length === 0 ? (
+        <p className="text-slate-700">Your saved lab reports will appear here.</p>
+      ) : (
+        <ul className="divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white">
+          {records.cases.map(({ id, title }) => (
+            <li key={id}>
+              <Link
+                href={'/records/' + id}
+                className="flex items-center gap-3 p-4 font-medium text-primary-blue underline underline-offset-2"
+                prefetch={false}
+              >
+                <FileText aria-hidden="true" className="size-5 shrink-0" />
+                <span className="break-all">{title || 'Lab report'}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function LabRecordsPreview() {
   const records = [
     {
       id: 'REC-001',

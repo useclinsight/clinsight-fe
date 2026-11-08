@@ -32,7 +32,7 @@ export function PatientSignInForm() {
         setError('root', { message: result.message });
         return;
       }
-      window.location.replace('/');
+      window.location.replace('/dashboard');
     } catch {
       setError('root', { message: 'Sign-in is temporarily unavailable. Please try again.' });
     }
