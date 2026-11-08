@@ -182,7 +182,7 @@ export function PatientGuestUpload({
     return (
       <div className="mx-auto max-w-md text-center">
         <h2 className="text-xl font-semibold tracking-tight text-gray-900 sm:text-2xl">
-          Upload Your Lab Result
+          Upload your lab result
         </h2>
         <p className="mt-2 text-sm text-slate-700 sm:text-base">
           Upload a lab report to get started
@@ -204,7 +204,7 @@ export function PatientGuestUpload({
           onClick={() => sheetFileInput.current?.click()}
         >
           <Upload aria-hidden="true" className="size-5" />
-          Upload Result
+          Upload result
         </Button>
       </div>
     );
