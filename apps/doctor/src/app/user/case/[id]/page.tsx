@@ -1,24 +1,19 @@
-import CaseScreen from '@/components/doctor/case/CaseScreen';
-import {
-  buildDemoCaseList,
-  resolveCaseDetail,
-  type CaseDetailData,
-  type CaseListItem,
-} from '@/lib/cases-utils';
-import casesMock from '@/mocks/doctor/cases.json';
 import { notFound } from 'next/navigation';
+import CaseScreen from '@/components/doctor/case/CaseScreen';
+import { mapApiDetailToCaseData } from '@/lib/cases-utils';
+import { fetchCaseFullDetail } from '@/services/doctor';
+
+export const dynamic = 'force-dynamic';
 
 export default async function CaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const caseData = resolveCaseDetail(
-    id,
-    buildDemoCaseList(casesMock.list as CaseListItem[]),
-    casesMock.details as Record<string, CaseDetailData>,
-  );
+  const detail = await fetchCaseFullDetail(id);
 
-  if (!caseData) {
+  if (!detail || !detail.case) {
     notFound();
   }
+
+  const caseData = mapApiDetailToCaseData(detail);
 
   return <CaseScreen caseData={caseData} />;
 }

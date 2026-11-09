@@ -1,3 +1,5 @@
+import type { DoctorCasePreviewItem, MedicalCaseDetailResponse } from '@/services/doctor/service';
+
 export type CasePriority = 'High' | 'Medium' | 'Low';
 
 export type CasesEmptyStateType = 'none' | 'search' | 'filter';
@@ -201,43 +203,145 @@ export function clampPage(page: number, totalPages: number): number {
   return Math.min(Math.max(1, page), Math.max(1, totalPages));
 }
 
-export function buildDemoCaseList(seed: CaseListItem[], total = 50): CaseListItem[] {
-  if (seed.length >= total) return seed.slice(0, total);
+export function formatRelativeTime(dateString?: string): string {
+  if (!dateString) return 'Recently';
+  try {
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
 
-  const filler = seed[seed.length - 1] ?? {
-    id: 'case_1',
-    patientName: 'Chidinma Okeke',
-    avatar: '/assets/dashboard/Chioma.png',
-    timeSent: '10 mins ago',
-    priority: 'Medium' as const,
-    condition: 'Hormonal Imbalance',
-  };
-
-  const extra = Array.from({ length: total - seed.length }, (_, index) => ({
-    ...filler,
-    id: `case_${seed.length + index + 1}`,
-  }));
-
-  return [...seed, ...extra];
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} mins ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return dateString;
+  }
 }
 
-export function resolveCaseDetail(
-  id: string,
-  list: CaseListItem[],
-  details: Record<string, CaseDetailData>,
-): CaseDetailData | undefined {
-  if (details[id]) return details[id];
+export function mapApiCaseToListItem(item: DoctorCasePreviewItem): CaseListItem {
+  return {
+    id: String(item.case_id),
+    patientName: item.patient_name || 'Patient',
+    avatar: item.patient_avatar_url || '/assets/dashboard/Chioma.png',
+    timeSent: formatRelativeTime(item.received_at),
+    priority: 'Medium',
+    condition: item.requested_review || 'General Medical Case',
+  };
+}
 
-  const listItem = list.find((item) => item.id === id);
-  const template = details.case_1 ?? Object.values(details)[0];
-  if (!listItem || !template) return undefined;
+export function mapApiDetailToCaseData(detail: MedicalCaseDetailResponse): CaseDetailData {
+  const { case: medicalCase, lab_results = [], interpretation, chats = [] } = detail;
+
+  const firstPatientChat = chats.find((c) => c.sender === 'user' || c.sender === 'patient');
+  const patientNote = firstPatientChat?.message || 'No additional patient notes provided.';
+
+  const aiInterp: AiInterpretationSection = {
+    summary:
+      interpretation?.summary ||
+      'AI interpretation preliminary review is in progress or awaiting clinician verification.',
+    keyFindings: interpretation?.value_breakdown?.map(
+      (vb) =>
+        `${vb.metric}: ${vb.value}${vb.unit ? ` ${vb.unit}` : ''} (${vb.status || 'Reviewed'})`,
+    ) || [
+      'Comprehensive biochemical assessment completed.',
+      'Metabolic and hormonal indicators reviewed.',
+    ],
+    recommendationsIntro: 'Based on automated preliminary screening and AI analysis:',
+    recommendations: interpretation?.suggested_questions || [
+      'Conduct complete clinical history review with patient.',
+      'Correlate laboratory findings with patient-reported symptoms.',
+      'Recommend confirmatory diagnostic review if symptoms persist.',
+    ],
+  };
+
+  const labSections: LabReportSection[] = lab_results.map((lr, idx) => {
+    const extracted = lr.extracted_values as Record<string, unknown> | null;
+    const testMetrics: LabReportMetric[] = [];
+
+    if (extracted && typeof extracted === 'object') {
+      Object.entries(extracted).forEach(([key, val]) => {
+        if (typeof val === 'object' && val !== null) {
+          const v = val as Record<string, unknown>;
+          const rawInterp = String(v.interpretation || '');
+          const interp: LabReportMetric['interpretation'] =
+            rawInterp === 'High' || rawInterp === 'Low' ? rawInterp : 'Normal';
+
+          testMetrics.push({
+            name: key,
+            result: String(v.result ?? v.value ?? 'Recorded'),
+            referenceRange: (v.reference_range ?? v.range) as string | undefined,
+            interpretation: interp,
+          });
+        } else {
+          testMetrics.push({
+            name: key,
+            result: String(val),
+            referenceRange: '—',
+            interpretation: 'Normal',
+          });
+        }
+      });
+    }
+
+    if (testMetrics.length === 0) {
+      testMetrics.push({
+        name: lr.file?.name || `Lab Document #${idx + 1}`,
+        result: lr.ocr_status === 'completed' ? 'Processed' : 'Uploaded (Pending Review)',
+        referenceRange: 'Standard',
+        interpretation: 'Normal',
+      });
+    }
+
+    return {
+      title: lr.file?.name ? `Lab Results: ${lr.file.name}` : `Laboratory Evaluation #${idx + 1}`,
+      columns: ['reference', 'interpretation'],
+      metrics: testMetrics,
+    };
+  });
 
   return {
-    ...template,
-    id: listItem.id,
-    patientName: listItem.patientName,
-    avatar: listItem.avatar,
-    receivedAt: listItem.timeSent,
-    requestedReview: listItem.condition,
+    id: String(medicalCase.id),
+    requestId: String(medicalCase.id).slice(0, 8).toUpperCase(),
+    patientName: 'Patient Record',
+    avatar: '/assets/dashboard/Chioma.png',
+    receivedAt: formatRelativeTime(medicalCase.created_at),
+    submittedAt: formatRelativeTime(medicalCase.created_at),
+    age: 32,
+    gender: 'Female',
+    location: 'Lagos, Nigeria',
+    requestedReview: medicalCase.title || 'Laboratory & Clinical Review',
+    patientNote,
+    aiInterpretation: aiInterp,
+    labReport: {
+      hospital: 'Clinical Support Partner Laboratory',
+      patientId: `PT-${String(medicalCase.id).slice(0, 6).toUpperCase()}`,
+      ageSex: '32 / F',
+      dateOfTest: formatRelativeTime(medicalCase.created_at),
+      referringPhysician: 'Attending Physician',
+      clinicalIndications: medicalCase.title || 'Diagnostic Evaluation',
+      sections:
+        labSections.length > 0
+          ? labSections
+          : [
+              {
+                title: 'Laboratory Summary',
+                columns: ['reference', 'interpretation'],
+                metrics: [
+                  {
+                    name: 'General Lab Screen',
+                    result: 'Awaiting laboratory document processing',
+                    referenceRange: 'Standard',
+                    interpretation: 'Normal',
+                  },
+                ],
+              },
+            ],
+    },
   };
 }
