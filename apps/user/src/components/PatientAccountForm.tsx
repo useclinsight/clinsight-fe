@@ -41,6 +41,7 @@ type Field<T extends FieldValues> = {
   placeholder?: string;
 };
 type Feedback = { message: string; success?: boolean };
+type SubmitResult = Feedback | { destination: string };
 
 function AccountForm<T extends FieldValues>({
   resolver,
@@ -55,7 +56,7 @@ function AccountForm<T extends FieldValues>({
   defaults: DefaultValues<T>;
   fields: Field<T>[];
   label: string;
-  action: (input: T) => Promise<Feedback | undefined>;
+  action: (input: T) => Promise<SubmitResult | undefined>;
   resend?: () => Promise<Feedback>;
   passwordFields?: { primary: Path<T>; confirmation: Path<T> };
 }) {
@@ -79,7 +80,8 @@ function AccountForm<T extends FieldValues>({
     setNotice(undefined);
     try {
       const result = await withSessionLock(() => action(input));
-      if (result) setError('root', { message: result.message });
+      if (result && 'destination' in result) window.location.replace(result.destination);
+      else if (result) setError('root', { message: result.message });
     } catch {
       setError('root', { message: 'Something went wrong. Please try again.' });
     }
@@ -203,10 +205,10 @@ function AccountForm<T extends FieldValues>({
   );
 }
 
-export function PatientSignupForm() {
+export function PatientSignupForm({ fromGuest }: { fromGuest: boolean }) {
   return (
     <AccountForm
-      action={signUpPatient}
+      action={(input) => signUpPatient(input, fromGuest)}
       resolver={zodResolver(signupSchema)}
       defaults={{ first_name: '', last_name: '', email: '', password: '', confirm_password: '' }}
       label="Continue"
@@ -270,11 +272,21 @@ export function PatientRecoveryForm() {
   );
 }
 
-export function PatientCodeForm({ email, flow }: { email: string; flow: 'signup' | 'recovery' }) {
+export function PatientCodeForm({
+  email,
+  flow,
+  fromGuest = false,
+}: {
+  email: string;
+  flow: 'signup' | 'recovery';
+  fromGuest?: boolean;
+}) {
   return (
     <AccountForm
       action={(input) =>
-        flow === 'signup' ? verifyPatientEmail(input, email) : verifyPatientReset(input, email)
+        flow === 'signup'
+          ? verifyPatientEmail(input, email, fromGuest)
+          : verifyPatientReset(input, email)
       }
       resend={() => resendPatientCode(flow, email)}
       resolver={zodResolver(emailCodeSchema)}
