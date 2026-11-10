@@ -1,4 +1,3 @@
-import overviewMock from '@/mocks/doctor/overview.json';
 import { apiClient, ApiError } from '@/lib/api-client';
 
 export interface CaseRequest {
@@ -28,6 +27,71 @@ export interface Case {
   status: string;
   priority?: string;
   condition: string;
+}
+
+export interface DoctorCasePreviewItem {
+  case_id: string;
+  patient_name: string | null;
+  patient_avatar_url: string | null;
+  requested_review: string | null;
+  status: string;
+  received_at: string;
+  updated_at: string;
+}
+
+export interface DoctorCasePage {
+  items: DoctorCasePreviewItem[];
+  page: number;
+  page_size: number;
+  has_more: boolean;
+}
+
+export interface ValueBreakdown {
+  metric: string;
+  value: string | number;
+  unit?: string | null;
+  status?: string | null;
+}
+
+export interface AIInterpretationData {
+  id: string;
+  medical_case_id: string;
+  status: string;
+  summary?: string | null;
+  value_breakdown?: ValueBreakdown[] | null;
+  suggested_questions?: string[] | null;
+  risk_level?: string | null;
+  confidence?: string | null;
+}
+
+export interface LabResultData {
+  id: string;
+  medical_case_id: string;
+  file: {
+    name: string;
+    url: string;
+    mime_type: string;
+  };
+  ocr_status: string;
+  extracted_values?: Record<string, unknown> | null;
+  ocr_completed_at?: string | null;
+  created_at: string;
+}
+
+export interface MedicalCaseData {
+  id: string;
+  user_id?: string | null;
+  title?: string | null;
+  status: string;
+  created_at: string;
+  completed_at?: string | null;
+}
+
+export interface MedicalCaseDetailResponse {
+  case: MedicalCaseData;
+  lab_results: LabResultData[];
+  interpretation?: AIInterpretationData | null;
+  chats: Array<{ id: string; message: string; sender: string; created_at: string }>;
 }
 
 export interface DoctorStatistics {
@@ -226,25 +290,96 @@ export async function getOverview(): Promise<Overview> {
   return computed;
 }
 
-export function getActiveCases(): Promise<Case[]> {
-  const { cases = [] } = overviewMock as Overview;
-  const active = cases.filter((c: Case) => c.status === 'Pending');
-  return new Promise((resolve) => setTimeout(() => resolve(active), 10));
+export async function fetchDoctorCases(params?: {
+  tab?: 'ongoing' | 'completed';
+  search?: string;
+  page?: number;
+  pageSize?: number;
+  status?: string;
+}): Promise<DoctorCasePage | null> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.tab) query.set('tab', params.tab);
+    if (params?.search) query.set('search', params.search);
+    if (params?.page) query.set('page', String(params.page));
+    if (params?.pageSize) query.set('page_size', String(params.pageSize));
+    if (params?.status) query.set('status', params.status);
+
+    const queryString = query.toString();
+    const endpoint = `/api/doctors/cases${queryString ? `?${queryString}` : ''}`;
+    const response = await apiClient.get<{
+      data?: DoctorCasePage | DoctorCasePreviewItem[];
+      message?: string;
+    }>(endpoint);
+
+    const data = response?.data;
+    if (!data) return null;
+
+    if (Array.isArray(data)) {
+      return {
+        items: data,
+        page: params?.page ?? 1,
+        page_size: params?.pageSize ?? data.length,
+        has_more: false,
+      };
+    }
+
+    return data as DoctorCasePage;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      console.warn(`[Doctor Cases] API error HTTP ${error.status}: ${error.message}`);
+    } else {
+      console.error('Failed to fetch doctor cases:', error);
+    }
+    return null;
+  }
 }
 
-export function getCompletedCases(): Promise<Case[]> {
-  const { cases = [] } = overviewMock as Overview;
-  const completed = cases.filter((c: Case) => c.status === 'Completed');
-  return new Promise((resolve) => setTimeout(() => resolve(completed), 10));
+export async function fetchDoctorCaseRequests(): Promise<DoctorCasePreviewItem[]> {
+  try {
+    const response = await apiClient.get<{ data?: DoctorCasePreviewItem[] }>(
+      '/api/doctors/cases/requests',
+    );
+    return response?.data || [];
+  } catch (error) {
+    console.error('Failed to fetch doctor case requests:', error);
+    return [];
+  }
 }
 
-export function getCaseRequests(): Promise<CaseRequest[]> {
-  const { caseRequests = [] } = overviewMock as Overview;
-  return new Promise((resolve) => setTimeout(() => resolve(caseRequests), 10));
+export async function acceptDoctorCase(caseId: string): Promise<boolean> {
+  try {
+    await apiClient.post(`/api/doctors/cases/${caseId}/accept`);
+    return true;
+  } catch (error) {
+    console.error('Failed to accept case:', error);
+    return false;
+  }
 }
 
-export function getCaseById(id: string): Promise<Case | undefined> {
-  const { cases = [] } = overviewMock as Overview;
-  const found = cases.find((c: Case) => c.id === id);
-  return new Promise((resolve) => setTimeout(() => resolve(found), 10));
+export async function declineDoctorCase(caseId: string): Promise<boolean> {
+  try {
+    await apiClient.post(`/api/doctors/cases/${caseId}/decline`);
+    return true;
+  } catch (error) {
+    console.error('Failed to decline case:', error);
+    return false;
+  }
+}
+
+export async function fetchCaseFullDetail(
+  caseId: string,
+): Promise<MedicalCaseDetailResponse | null> {
+  try {
+    const response = await apiClient.get<{ data?: MedicalCaseDetailResponse }>(
+      `/api/cases/${caseId}/full`,
+    );
+    return response?.data || null;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+    console.error('Failed to fetch case detail:', error);
+    return null;
+  }
 }
