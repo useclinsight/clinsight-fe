@@ -1,40 +1,30 @@
 import { NextResponse } from 'next/server';
+import { backendUrl } from '@/lib/backend-url';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const token = body.token || body.reset_token || body.otp;
-    const new_password = body.new_password || body.password;
+    const token = body.token;
+    const new_password = body.new_password;
 
-    if (!new_password) {
-      return NextResponse.json({ error: 'New password is required' }, { status: 400 });
+    if (typeof token !== 'string' || !token.trim() || typeof new_password !== 'string') {
+      return NextResponse.json(
+        { error: 'Reset token and new password are required' },
+        { status: 400 },
+      );
     }
-
-    const RESET_PASSWORD_API_URL =
-      process.env.RESET_PASSWORD_API_URL ||
-      process.env.NEXT_PUBLIC_RESET_PASSWORD_API_URL ||
-      `${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.staging.useclinsight.com'}/api/v1/auth/reset-password`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 6000);
 
     try {
-      const payload: Record<string, string> = {
-        new_password,
-      };
-      if (body.email) payload.email = body.email;
-      if (token) {
-        payload.token = token;
-        payload.reset_token = token;
-      }
-
-      const response = await fetch(RESET_PASSWORD_API_URL, {
+      const response = await fetch(backendUrl('/api/v1/auth/reset-password'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           accept: 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ token, new_password }),
         signal: controller.signal,
       });
 

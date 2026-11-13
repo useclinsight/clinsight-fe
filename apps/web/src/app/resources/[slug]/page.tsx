@@ -51,7 +51,8 @@ export async function generateMetadata({ params }: ResourcePageProps): Promise<M
 
   if (!resource) return {};
 
-  return pageMetadata(resource.title, resource.description, `/resources/${slug}`);
+  const metadata = pageMetadata(resource.title, resource.description, `/resources/${slug}`);
+  return slug === DEMO_SLUG ? { ...metadata, robots: { index: false, follow: false } } : metadata;
 }
 
 export default async function ResourcePage({ params }: ResourcePageProps) {

@@ -33,7 +33,7 @@ export type Patient = z.infer<typeof patientSchema>;
 export type PatientTokens = z.infer<typeof tokensSchema>;
 
 function apiBaseUrl() {
-  const url = new URL(process.env.API_BASE_URL ?? '');
+  const url = new URL(process.env.NEXT_PUBLIC_API_BASE_URL ?? '');
   const isLocalDevelopment =
     process.env.NODE_ENV === 'development' && ['localhost', '127.0.0.1'].includes(url.hostname);
 
@@ -45,7 +45,7 @@ function apiBaseUrl() {
     url.search ||
     url.hash
   ) {
-    throw new Error('Set API_BASE_URL to the patient API origin.');
+    throw new Error('Set NEXT_PUBLIC_API_BASE_URL to the patient API origin.');
   }
 
   return url.origin;

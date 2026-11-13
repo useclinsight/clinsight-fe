@@ -1,84 +1,63 @@
 'use server';
 
-import { headers } from 'next/headers';
 import { subscribeSchema } from '@/schemas/subscribe-schema';
+import { backendUrl } from '@/lib/backend-url';
 
 type SubscriptionActionResult =
   | { success: true; status: number }
   | { success: false; status: number; error: string };
 
-async function getSubscriptionRouteUrl() {
-  const requestHeaders = await headers();
-  const origin = requestHeaders.get('origin');
-
-  if (origin) {
-    try {
-      return new URL('/api/v1/subscribe', origin).toString();
-    } catch {
-      // Fall back to the request host below.
-    }
-  }
-
-  const host = requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host');
-  if (!host) return null;
-
-  const protocol = requestHeaders.get('x-forwarded-proto') ?? 'http';
-
-  try {
-    return new URL(`/api/v1/subscribe`, `${protocol}://${host}`).toString();
-  } catch {
-    return null;
-  }
-}
+const subscriptionDestinations = {
+  lead_magnet: {
+    groupId: process.env.MAILERLITE_LEAD_MAGNET_GROUP_ID?.trim(),
+    tags: ['lead_magnet_guide'],
+  },
+  waitlist: {
+    groupId: process.env.MAILERLITE_WAITLIST_GROUP_ID?.trim(),
+    tags: ['waitlist'],
+  },
+} as const;
 
 export async function submitSubscriptionAction(input: unknown): Promise<SubscriptionActionResult> {
   const parsedInput = subscribeSchema.safeParse(input);
-
   if (!parsedInput.success) {
     return { success: false, status: 400, error: 'Valid email required' };
   }
 
-  const routeUrl = await getSubscriptionRouteUrl();
-  if (!routeUrl) {
-    return { success: false, status: 500, error: 'Subscription is unavailable' };
+  const { email, first_name, source } = parsedInput.data;
+  const destination = subscriptionDestinations[source];
+  if (!destination.groupId) {
+    return { success: false, status: 503, error: 'Subscription is unavailable' };
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
-
   try {
-    const response = await fetch(routeUrl, {
+    const response = await fetch(backendUrl('/api/v1/subscribe'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(parsedInput.data),
-      signal: controller.signal,
+      body: JSON.stringify({
+        email,
+        first_name,
+        group_id: destination.groupId,
+        tags: destination.tags,
+      }),
+      signal: AbortSignal.timeout(15000),
     });
 
-    const contentType = response.headers.get('content-type') ?? '';
-    let error = 'Something went wrong. Please try again.';
+    if (response.ok) return { success: true, status: response.status };
 
-    if (!response.ok) {
-      if (contentType.includes('application/json')) {
-        try {
-          const data = (await response.json()) as { error?: unknown };
-          if (typeof data.error === 'string') error = data.error;
-        } catch {
-          // Keep the safe default error message.
-        }
-      }
+    const body = await response.json().catch(() => null);
+    const detail = body?.detail ?? body?.message ?? body?.error;
+    const message = typeof detail === 'string' ? detail : 'Something went wrong. Please try again.';
+    const isDuplicate = response.status === 409 || /already|exist|duplicate/i.test(message);
 
-      return { success: false, status: response.status, error };
-    }
-
-    return { success: true, status: response.status };
+    return isDuplicate
+      ? { success: false, status: 409, error: 'This email is already subscribed!' }
+      : { success: false, status: response.status, error: message };
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
       return { success: false, status: 504, error: 'Request took too long. Please try again.' };
     }
-
     return { success: false, status: 502, error: 'Something went wrong. Please try again.' };
-  } finally {
-    clearTimeout(timeoutId);
   }
 }
 
