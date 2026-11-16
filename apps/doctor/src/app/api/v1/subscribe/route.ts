@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { subscribeSchema } from '@/schemas/subscribe-schema';
+import { backendUrl } from '@/lib/backend-url';
 
 const subscriptionDestinations = {
   lead_magnet: {
@@ -36,17 +37,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Subscription is unavailable' }, { status: 503 });
     }
 
-    const apiBaseUrl = (process.env.API_BASE_URL || 'https://api.staging.useclinsight.com').replace(
-      /\/+$/,
-      '',
-    );
-    const SUBSCRIBE_API_URL = `${apiBaseUrl}/api/v1/subscribe`;
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const response = await fetch(SUBSCRIBE_API_URL, {
+      const response = await fetch(backendUrl('/api/v1/subscribe'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -11,6 +11,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Clinsight Patient Portal',
   description: 'Understand your health, view consultations, and review lab explanations.',
+  robots: { index: false, follow: false },
   icons: {
     icon: '/clinsight-favicon.svg',
   },

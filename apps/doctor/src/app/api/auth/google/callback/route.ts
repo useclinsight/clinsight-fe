@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { applyAuthCookies, readAuthTokens } from '@/lib/auth-session';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.staging.useclinsight.com';
+import { backendUrl } from '@/lib/backend-url';
 
 function buildApiGoogleCallbackUrl(code: string, state: string | null) {
-  const callbackUrl = new URL(`${BASE_URL.replace(/\/$/, '')}/api/v1/auth/google/callback`);
+  const callbackUrl = new URL(backendUrl('/api/v1/auth/google/callback'));
   callbackUrl.searchParams.set('code', code);
   if (state) {
     callbackUrl.searchParams.set('state', state);

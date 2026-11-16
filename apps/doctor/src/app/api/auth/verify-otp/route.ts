@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { EMAIL_REGEX } from '@/lib/validation';
+import { backendUrl } from '@/lib/backend-url';
 
 export async function POST(request: Request) {
   try {
@@ -15,22 +16,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid verification payload' }, { status: 400 });
     }
 
-    const BACKEND_URL =
-      process.env.NEXT_PUBLIC_VERIFY_RESET_OTP_API_URL ||
-      process.env.NEXT_PUBLIC_VERIFY_OTP_API_URL ||
-      `${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.staging.useclinsight.com'}/api/v1/auth/verify-reset-otp`;
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const response = await fetch(BACKEND_URL, {
+      const response = await fetch(backendUrl('/api/v1/auth/verify-reset-otp'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ email: email.trim(), code: otp }),
+        body: JSON.stringify({ email: email.trim(), code: otp, role: 'doctor' }),
         signal: controller.signal,
       });
 

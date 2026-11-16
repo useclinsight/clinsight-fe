@@ -1,9 +1,4 @@
-const BACKEND_URL = (
-  process.env.API_BASE_URL ||
-  process.env.NEXT_PUBLIC_API_URL_BASE_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  'https://api.staging.useclinsight.com'
-).replace(/\/$/, '');
+import { backendUrl } from '@/lib/backend-url';
 
 export interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
@@ -29,7 +24,7 @@ function resolveUrl(path: string): string {
 
   // If pointing directly to backend API v1 endpoints
   if (cleanPath.startsWith('/api/v1')) {
-    return `${BACKEND_URL}${cleanPath}`;
+    return backendUrl(cleanPath as `/${string}`);
   }
 
   // On client, relative URLs (/api/...) resolve natively against current window location
@@ -40,7 +35,7 @@ function resolveUrl(path: string): string {
   // On server, resolve relative Next.js API routes (/api/...) to local app host
   const appBaseUrl = (
     process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3001')
   ).replace(/\/$/, '');
 
   return `${appBaseUrl}${cleanPath}`;

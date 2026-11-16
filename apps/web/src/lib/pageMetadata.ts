@@ -4,14 +4,15 @@ import { getPublicSiteUrl } from '@/lib/site-url';
 export function pageMetadata(title: string, description: string, endpoint: string): Metadata {
   const appUrl = getPublicSiteUrl();
   const url = appUrl ? `${appUrl}${endpoint}` : undefined;
+  const fullTitle = title.includes('Clinsight') ? title : `${title} · Clinsight`;
 
   return {
-    title: endpoint === '/' ? { absolute: title } : title,
+    title: { absolute: fullTitle },
     description,
     alternates: { canonical: endpoint },
     openGraph: {
       type: 'website',
-      title,
+      title: fullTitle,
       description,
       url,
       images: [
@@ -23,6 +24,11 @@ export function pageMetadata(title: string, description: string, endpoint: strin
         },
       ],
     },
-    twitter: { card: 'summary_large_image', title, description, images: ['/og-image.png'] },
+    twitter: {
+      card: 'summary_large_image',
+      title: fullTitle,
+      description,
+      images: ['/og-image.png'],
+    },
   };
 }

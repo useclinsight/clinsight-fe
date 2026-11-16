@@ -27,6 +27,10 @@ const fadeInUp: Variants = {
   },
 };
 
+const doctorAppUrl = (
+  process.env.NEXT_PUBLIC_DOCTOR_APP_URL?.trim() || 'http://localhost:3001'
+).replace(/\/+$/, '');
+
 export function MedicalProfessional() {
   return (
     <section className="bg-[#E8F0F9] py-16 lg:py-24 overflow-hidden">
@@ -74,7 +78,7 @@ export function MedicalProfessional() {
             </motion.div>
 
             <motion.div variants={fadeInUp}>
-              <Link href="/waitlist">
+              <Link href={`${doctorAppUrl}/signup`}>
                 <Button
                   className="w-fit h-[42px] lg:h-[48px] rounded-[12px] 
               bg-[#1565C0] px-4 lg:px-6 py-2 lg:py-3 text-[13px] lg:text-sm font-bold 
