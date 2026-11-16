@@ -17,7 +17,7 @@ function shouldTrackPostHog(pathname: string | null) {
 
 export function AnalyticsProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
-  const hasTrackedInitialMetaPageView = useRef(false);
+  const lastTrackedMetaPathname = useRef<string | null>(null);
 
   useEffect(() => {
     if (!shouldTrackPostHog(pathname)) return;
@@ -25,11 +25,13 @@ export function AnalyticsProvider({ children }: Readonly<{ children: React.React
   }, [pathname]);
 
   useEffect(() => {
-    if (!hasTrackedInitialMetaPageView.current) {
-      hasTrackedInitialMetaPageView.current = true;
+    if (!pathname) return;
+    if (lastTrackedMetaPathname.current === null) {
+      lastTrackedMetaPathname.current = pathname;
       return;
     }
-
+    if (pathname === lastTrackedMetaPathname.current) return;
+    lastTrackedMetaPathname.current = pathname;
     trackPageView();
   }, [pathname]);
 
