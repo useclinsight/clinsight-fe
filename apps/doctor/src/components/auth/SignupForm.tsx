@@ -12,9 +12,6 @@ import { signupAction } from '@/actions/auth-actions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { trackSignup } from '@/lib/analytics/ga';
-import { trackRegistration } from '@/lib/analytics/pixel';
-import { runAnalyticsSafely } from '@/lib/analytics/safe';
 import { backendUrl } from '@/lib/backend-url';
 
 const signupSchema = z.object({
@@ -107,7 +104,6 @@ export function SignupForm() {
         setApiError(result.error);
         toast.error(result.error);
       } else {
-        runAnalyticsSafely(trackRegistration, trackSignup);
         toast.success('Account created successfully! Please verify your email.');
         router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
       }

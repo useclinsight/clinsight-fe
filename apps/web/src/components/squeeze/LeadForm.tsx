@@ -65,7 +65,10 @@ export function LeadForm() {
       }
 
       setIsDone(true);
-      runAnalyticsSafely(identifyLead, () => captureLead('guide'), trackLead, trackGuideDownload);
+      if (result.success) {
+        runAnalyticsSafely(identifyLead, () => captureLead('guide'), trackLead);
+      }
+      runAnalyticsSafely(trackGuideDownload);
       toast.success('Your guide is ready.');
 
       // Download directly from the current page. Opening a blank tab before the
