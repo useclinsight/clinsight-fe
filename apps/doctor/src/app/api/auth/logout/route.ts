@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.staging.useclinsight.com';
+import { backendUrl } from '@/lib/backend-url';
 
 export async function POST(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   response.cookies.delete('refresh_token');
 
   try {
-    await fetch(`${BASE_URL}/api/v1/auth/logout`, {
+    await fetch(backendUrl('/api/v1/auth/doctor/logout'), {
       method: 'POST',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),

@@ -8,12 +8,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { HugeiconsIcon } from '@hugeicons/react';
-import {
-  ViewIcon,
-  ViewOffSlashIcon as EyeOffIcon,
-  ArrowLeft02Icon,
-  MailAdd01Icon,
-} from '@hugeicons/core-free-icons';
+import { ArrowLeft02Icon } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { EMAIL_REGEX } from '@/lib/validation';
 
@@ -269,7 +264,7 @@ export default function ForgotPasswordContent() {
 
       setStep('otp');
       startOtpTimer();
-      toast.success('Verification code sent to your email.');
+      toast.success('If this email belongs to a doctor account, check it for a code.');
     } catch {
       const errorMsg = 'Something went wrong, please check your connection and try again';
       setApiError(errorMsg);
@@ -342,13 +337,13 @@ export default function ForgotPasswordContent() {
         return;
       }
 
-      const tokenFromBackend =
-        data?.reset_token ||
-        data?.token ||
-        data?.access_token ||
-        data?.data?.reset_token ||
-        data?.data?.token ||
-        submittedOtp;
+      const tokenFromBackend = data?.data?.reset_token ?? data?.reset_token;
+      if (typeof tokenFromBackend !== 'string' || !tokenFromBackend) {
+        const errorMsg = 'The verification response did not include a reset token.';
+        setApiError(errorMsg);
+        toast.error(errorMsg);
+        return;
+      }
       setResetToken(tokenFromBackend);
 
       setStep('reset');
@@ -388,7 +383,7 @@ export default function ForgotPasswordContent() {
 
       setOtp(new Array(6).fill(''));
       startOtpTimer();
-      toast.success('New verification code sent to your email.');
+      toast.success('If this email belongs to a doctor account, check it for a new code.');
     } catch {
       const errorMsg = 'Something went wrong, please check your connection and try again';
       setApiError(errorMsg);
@@ -406,16 +401,14 @@ export default function ForgotPasswordContent() {
     setApiError(null);
 
     try {
-      const tokenToSend = resetToken || otp.join('');
+      if (!resetToken) {
+        setApiError('Please verify your code before resetting your password.');
+        return;
+      }
       const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.trim(),
-          token: tokenToSend,
-          reset_token: tokenToSend,
-          new_password: submittedNewPassword,
-        }),
+        body: JSON.stringify({ token: resetToken, new_password: submittedNewPassword }),
       });
 
       const data = await res.json().catch(() => null);
@@ -445,23 +438,43 @@ export default function ForgotPasswordContent() {
   // ─── Render Step Views ─────────────────────────────────────────────────────
 
   return (
-    <main className="min-h-screen w-full bg-white flex flex-col justify-between items-center select-none font-sans">
-      {/* ── Header ──────────────────────────────────────────────────────── */}
-      <header className="w-full max-w-7xl px-8 pt-8 md:px-12 md:pt-10 flex items-center justify-start">
-        <Link href="/login" className="relative h-9 w-36 block">
+    <main className="relative min-h-dvh w-full bg-white font-sans">
+      <header className="absolute top-[79px] left-4 md:top-[58px] md:left-[max(32px,5.556vw)]">
+        <Link
+          href="/login"
+          className="flex items-center gap-[2.906px] text-[#1565c0] md:gap-[4.087px]"
+        >
           <Image
-            src="/assets/header-assets/clinsight-logo.svg"
-            alt="Clinsight Logo"
-            width={144}
-            height={36}
+            src="/assets/forgot-password/logo-mark-mobile.svg"
+            alt=""
+            width={23.4934}
+            height={29.1556}
             priority
-            className="object-contain"
+            className="md:hidden"
           />
+          <Image
+            src="/assets/forgot-password/logo-mark.svg"
+            alt=""
+            width={33.0375}
+            height={41}
+            priority
+            className="hidden md:block"
+          />
+          <span className="w-[58px] text-[14.532px] leading-none tracking-[-0.29px] md:w-[81px] md:text-[20.436px] md:tracking-[-0.4087px]">
+            Clinsight
+          </span>
         </Link>
       </header>
 
-      {/* ── Main Form Container ───────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col justify-center items-center w-full max-w-[440px] px-6 py-8">
+      <div
+        className={`mx-auto w-full max-w-[553px] px-4 pb-12 ${
+          step === 'reset'
+            ? 'pt-[160px] md:pt-[clamp(160px,19.34vh,198px)]'
+            : step === 'otp'
+              ? 'pt-[165px] md:pt-[clamp(168px,28.42vh,291px)]'
+              : 'pt-[165px] md:pt-[clamp(168px,28.22vh,289px)]'
+        }`}
+      >
         {step === 'email' && (
           <RequestEmailStep
             email={email}
@@ -528,39 +541,45 @@ function RequestEmailStep({ email, onSubmit, isLoading, apiError }: RequestEmail
   });
 
   return (
-    <div className="w-full flex flex-col items-center">
-      <div className="w-14 h-14 flex items-center justify-center mb-6 p-1">
+    <div className="flex w-full flex-col items-start md:items-center">
+      <div className="flex h-[35px] w-[35px] items-center justify-center md:mx-auto md:h-[53px] md:w-[53px]">
         <Image
           src="/assets/forgot-password/lock-slash.svg"
-          alt="Lock Slash Icon"
-          width={48}
-          height={48}
-          className="object-contain"
+          alt=""
+          width={53}
+          height={53}
+          className="h-[35px] w-[35px] md:h-[53px] md:w-[53px]"
         />
       </div>
 
-      <h1 className="text-3xl font-bold text-[#101828] text-center mb-2 tracking-tight">
+      <h1 className="mt-[9px] text-[24px] font-semibold leading-[31px] tracking-[-0.48px] text-[#191c21] md:mt-[22px] md:w-full md:text-center md:text-[32px] md:leading-[42px] md:tracking-[-0.64px]">
         Forgot Password?
       </h1>
-      <p className="text-base text-[#475467] text-center mb-8 font-normal leading-6">
-        Enter your registered email address and we&apos;ll send you a secure code to reset your
-        password.
+      <p className="mt-2 text-[14px] leading-[21px] tracking-[-0.14px] text-[#5e5e5e] md:mt-[14px] md:h-[52px] md:w-full md:text-center md:text-[16px] md:leading-6 md:tracking-[-0.16px] md:text-[#424752]">
+        Enter your registered email address and we&apos;ll send <br />
+        you a secure code to reset your password.
       </p>
 
       <form
         onSubmit={handleSubmit((data) => onSubmit(data.email))}
-        className="w-full flex flex-col gap-6"
+        className="mt-5 flex w-full flex-col md:mt-[31px]"
         noValidate
       >
-        <div className="flex flex-col gap-1.5 w-full">
-          <label htmlFor="reset-email" className="text-sm font-medium text-[#344054]">
-            Email address
+        <div className="flex w-full flex-col gap-1.5 md:gap-1">
+          <label
+            htmlFor="reset-email"
+            className="text-[14px] leading-[21px] tracking-[-0.14px] text-[#1b1b1b] md:text-[18px] md:leading-[27px] md:tracking-[-0.18px]"
+          >
+            <span className="md:hidden">Email</span>
+            <span className="max-md:hidden">Email address</span>
           </label>
           <div className="relative w-full">
-            <HugeiconsIcon
-              icon={MailAdd01Icon}
-              size={18}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#667085]"
+            <Image
+              src="/assets/forgot-password/ai-mail-02.svg"
+              alt=""
+              width={20}
+              height={20}
+              className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2"
             />
             <input
               id="reset-email"
@@ -568,7 +587,7 @@ function RequestEmailStep({ email, onSubmit, isLoading, apiError }: RequestEmail
               {...register('email')}
               placeholder="example@gmail.com"
               aria-invalid={!!errors.email}
-              className="w-full h-12 pl-10 pr-4 rounded-xl border border-[#D0D5DD] bg-white text-base text-[#101828] placeholder-[#98A2B3] outline-none focus:border-[#1565C0] focus:ring-1 focus:ring-[#1565C0] transition-colors"
+              className="h-[56px] w-full rounded-[8px] border border-[#bdc3c3] bg-white pr-4 pl-11 text-[16px] text-[#1a1a1a] outline-none placeholder:text-[14px] placeholder:text-[#8d8d8d] focus:border-[#1565c0] focus:ring-1 focus:ring-[#1565c0] max-md:h-[52px]"
             />
           </div>
           {errors.email && (
@@ -577,16 +596,16 @@ function RequestEmailStep({ email, onSubmit, isLoading, apiError }: RequestEmail
         </div>
 
         {apiError && (
-          <p className="text-xs italic font-medium text-[#F04438] text-center -mt-2">{apiError}</p>
+          <p className="mt-2 text-center text-xs font-medium text-[#F04438]">{apiError}</p>
         )}
 
         <button
           type="submit"
           disabled={isLoading || !isValid}
-          className={`w-full h-12 rounded-xl text-base font-semibold transition-colors flex items-center justify-center gap-2 select-none ${
+          className={`mt-20 flex h-[52px] w-full items-center justify-center gap-2 rounded-[12px] text-[16px] font-medium tracking-[-0.16px] transition-colors md:mt-[38px] ${
             isValid && !isLoading
               ? 'bg-[#1565C0] text-white hover:bg-[#1565C0]/90 cursor-pointer'
-              : 'bg-[#F2F4F7] text-[#98A2B3] cursor-not-allowed'
+              : 'bg-[#f5f5f5] text-[#767676] cursor-not-allowed'
           }`}
         >
           {isLoading ? (
@@ -594,16 +613,18 @@ function RequestEmailStep({ email, onSubmit, isLoading, apiError }: RequestEmail
               <Spinner />
               Sending code…
             </span>
-          ) : (
+          ) : isValid ? (
             'Send Reset Code'
+          ) : (
+            'Send reset code'
           )}
         </button>
 
         <Link
           href="/login"
-          className="flex items-center justify-center gap-2 text-sm font-semibold text-[#344054] hover:text-[#101828] transition-colors mt-2"
+          className="mt-4 flex items-center justify-center gap-2 text-[14px] leading-5 tracking-[-0.14px] text-black hover:text-[#1565c0]"
         >
-          <HugeiconsIcon icon={ArrowLeft02Icon} size={16} />
+          <HugeiconsIcon icon={ArrowLeft02Icon} size={12} />
           Back to Login
         </Link>
       </form>
@@ -701,47 +722,50 @@ function VerifyOtpStep({
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
-      <div className="w-14 h-14 flex items-center justify-center mb-6">
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-            stroke="#1565C0"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M22 6l-10 7L2 6"
-            stroke="#1565C0"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+    <div className="flex w-full flex-col items-start md:items-center">
+      <div className="flex h-[35px] w-[35px] items-center justify-center md:h-16 md:w-16">
+        <Image
+          src="/assets/forgot-password/sms-mobile.svg"
+          alt=""
+          width={35}
+          height={35}
+          className="md:hidden"
+        />
+        <Image
+          src="/assets/forgot-password/sms.svg"
+          alt=""
+          width={64}
+          height={64}
+          className="hidden md:block"
+        />
       </div>
 
-      <h1 className="text-3xl font-bold text-[#101828] text-center mb-2 tracking-tight">
-        Verify Your Identity
+      <h1
+        className={`mt-[9px] w-full text-[24px] font-semibold leading-[31px] tracking-[-0.48px] text-[#1b1b1b] md:text-center md:text-[32px] md:leading-[42px] md:tracking-[-0.64px] md:text-[#191c21] ${apiError ? 'md:mt-[25px]' : 'md:mt-[29px]'}`}
+      >
+        <span className="md:hidden">Verify your Identity</span>
+        <span className="hidden md:inline">Verify Your Identity</span>
       </h1>
-      <p className="text-base text-[#475467] text-center mb-6 font-normal leading-6">
-        We just sent a 6-digit code to the email attached below
-        <span className="block font-semibold text-[#101828] mt-1">
-          {email || 'example@gmail.com'}
+      <p
+        className={`mt-2 w-full text-[14px] leading-[21px] tracking-[-0.14px] text-[#5e5e5e] md:text-center md:text-[18px] md:leading-[normal] md:tracking-normal md:text-[#2e2e2e] ${apiError ? 'md:mt-[18px]' : 'md:mt-[14px]'}`}
+      >
+        <span className="md:hidden">
+          If this is a doctor account, check for a 6-digit code at:{' '}
+          <span className="font-medium text-[#1b1b1b]">{email || 'example@gmail.com'}</span>
+        </span>
+        <span className="hidden md:block">
+          If this is a doctor account, check for a 6-digit code at
+          <span className="mt-2 block font-medium text-[#1a1a1a]">
+            {email || 'example@gmail.com'}
+          </span>
         </span>
       </p>
 
       <form
         onSubmit={handleSubmit((data) => onSubmit(data.otp))}
-        className="w-full flex flex-col items-center gap-6"
+        className="flex w-full flex-col items-center"
       >
-        <div className="flex items-center justify-between gap-2.5 w-full my-2">
+        <div className="mt-[31px] flex w-full max-w-[385px] items-center justify-between md:mt-[50px]">
           {otp.map((digit, index) => (
             <input
               key={index}
@@ -757,28 +781,30 @@ function VerifyOtpStep({
               onChange={(e) => handleOtpChange(e.target, index)}
               onKeyDown={(e) => handleOtpKeyDown(e, index)}
               onPaste={handleOtpPaste}
-              className={`w-12 h-12 rounded-xl border text-center text-xl font-semibold outline-none transition-all ${
+              className={`w-[45.36px] min-w-0 rounded-[7px] border text-center text-[16px] font-normal outline-none transition-all md:h-12 md:w-[51px] md:rounded-[8px] ${apiError ? 'h-12' : 'h-[42.7px]'} ${
                 isLockedOut
-                  ? 'border-[#D0D5DD] bg-slate-100 text-[#98A2B3] cursor-not-allowed'
+                  ? 'border-[#d5d5d5] bg-slate-100 text-[#767676] cursor-not-allowed'
                   : apiError
-                    ? 'border-[#F04438] text-[#F04438] bg-white'
-                    : 'border-[#D0D5DD] bg-white text-[#101828] focus:border-[#1565C0] focus:ring-1 focus:ring-[#1565C0]'
+                    ? 'border-[#ef4444] text-[#1a1a1a] bg-white'
+                    : 'border-[#d5d5d5] bg-white text-[#1a1a1a] focus:border-[#1565C0] focus:ring-1 focus:ring-[#1565C0]'
               }`}
             />
           ))}
         </div>
 
         {apiError && (
-          <p className="text-xs text-[#F04438] text-center font-normal -mt-3">{apiError}</p>
+          <p className="mt-[10px] w-full text-left text-[12px] leading-[18px] text-[#ef4444] md:mt-3 md:max-w-[385px] md:text-[16px] md:leading-6">
+            {apiError}
+          </p>
         )}
 
         <button
           type="submit"
           disabled={isLoading || !isValid || isLockedOut}
-          className={`w-full h-12 rounded-xl text-base font-semibold transition-colors flex items-center justify-center gap-2 select-none ${
+          className={`flex h-[52px] w-full items-center justify-center gap-2 rounded-[12px] text-[16px] tracking-[-0.16px] transition-colors md:relative md:left-[-1px] ${isValid ? 'font-normal' : 'font-medium'} ${apiError ? 'mt-[76px] md:mt-10 md:h-[56px]' : isValid ? 'mt-20 md:mt-[46px] md:h-[56px]' : 'mt-20 md:mt-10'} ${
             isValid && !isLoading && !isLockedOut
               ? 'bg-[#1565C0] text-white hover:bg-[#1565C0]/90 cursor-pointer'
-              : 'bg-[#F2F4F7] text-[#98A2B3] cursor-not-allowed'
+              : 'bg-[#f5f5f5] text-[#767676] cursor-not-allowed'
           }`}
         >
           {isLoading ? (
@@ -787,11 +813,16 @@ function VerifyOtpStep({
               Verifying…
             </span>
           ) : (
-            'Verify Code'
+            <>
+              <span className="md:hidden">Verify Code</span>
+              <span className="hidden md:inline">{isValid ? 'Verify Code' : 'Verify code'}</span>
+            </>
           )}
         </button>
 
-        <div className="flex items-center gap-1.5 text-sm font-medium">
+        <div
+          className={`flex items-center gap-1.5 text-[16px] leading-[19px] ${apiError ? 'mt-4 md:mt-3' : isValid ? 'mt-[42px] md:mt-4' : 'mt-[42px] md:mt-[21px]'}`}
+        >
           {isLockedOut ? (
             <button
               type="button"
@@ -810,7 +841,7 @@ function VerifyOtpStep({
               type="button"
               onClick={onResend}
               disabled={isLoading}
-              className="text-[#1565C0] underline font-semibold hover:opacity-80 transition-opacity cursor-pointer"
+              className="cursor-pointer font-normal text-[#1565C0] underline transition-opacity hover:opacity-80"
             >
               Resend code
             </button>
@@ -883,31 +914,50 @@ function CreateNewPasswordStep({
   const isTyping = (watchNewPassword || '').length > 0;
 
   return (
-    <div className="w-full flex flex-col items-center">
-      <div className="w-14 h-14 flex items-center justify-center mb-6 p-1">
+    <div className="flex w-full flex-col items-start md:items-center">
+      <div className="flex h-[44px] w-[36px] items-center justify-center md:h-[60px] md:w-[48px]">
+        <Image
+          src="/assets/forgot-password/shield-mobile.svg"
+          alt=""
+          width={35.7292}
+          height={44.4449}
+          className="md:hidden"
+        />
         <Image
           src="/assets/forgot-password/shield-badge.svg"
-          alt="Shield Badge Icon"
-          width={48}
-          height={48}
-          className="object-contain"
+          alt=""
+          width={49}
+          height={61}
+          className="hidden md:block"
         />
       </div>
 
-      <h1 className="text-3xl font-bold text-[#101828] text-center mb-2 tracking-tight">
+      <h1 className="mt-[5px] w-full text-[24px] font-semibold leading-[31px] tracking-[-0.48px] text-[#1b1b1b] md:mt-[14px] md:text-center md:text-[32px] md:leading-[42px] md:tracking-[-0.64px] md:text-[#191c21]">
         Create new Password
       </h1>
-      <p className="text-base text-[#475467] text-center mb-8 font-normal leading-6">
-        Please create a secure password for your account.
+      <p className="mt-2 w-full text-[14px] leading-[21px] tracking-[-0.14px] text-[#5e5e5e] md:mt-[14px] md:h-[52px] md:text-center md:text-[16px] md:leading-6 md:tracking-[-0.16px] md:text-[#424752]">
+        <span className="md:hidden">
+          Please create a secure password for your
+          <br />
+          Clinsight Doctor’s account.
+        </span>
+        <span className="hidden md:inline">
+          Please create a secure password for your
+          <br />
+          account.
+        </span>
       </p>
 
       <form
         onSubmit={handleSubmit((data) => onSubmit(data.newPassword))}
-        className="w-full flex flex-col gap-6"
+        className="mt-5 flex w-full flex-col gap-[22px] md:mt-[29px] md:gap-4"
         noValidate
       >
-        <div className="flex flex-col gap-1.5 w-full">
-          <label htmlFor="new-password" className="text-sm font-medium text-[#344054]">
+        <div className="flex w-full flex-col gap-1.5 md:relative md:left-[5px] md:gap-1">
+          <label
+            htmlFor="new-password"
+            className="text-[14px] leading-[21px] tracking-[-0.14px] text-[#1b1b1b] md:text-[18px] md:leading-[27px] md:tracking-[-0.18px]"
+          >
             New Password
           </label>
           <div className="relative w-full">
@@ -917,28 +967,31 @@ function CreateNewPasswordStep({
               {...register('newPassword')}
               placeholder="••••••••"
               required
-              className="w-full h-12 pl-4 pr-12 rounded-xl border border-[#D0D5DD] bg-white text-base text-[#101828] placeholder-[#98A2B3] outline-none focus:border-[#1565C0] focus:ring-1 focus:ring-[#1565C0] transition-colors"
+              className="h-[52px] w-full rounded-[12px] border border-[#d0d0d0] bg-white pr-12 pl-5 text-[14px] text-[#2d2f2f] outline-none placeholder:text-[#8d8d8d] focus:border-[#1565C0] focus:ring-1 focus:ring-[#1565C0] md:h-[56px] md:rounded-[10px] md:border-[#d5d5d5] md:pl-4 md:text-[16px] md:text-[#1a1a1a]"
             />
             <button
               type="button"
               onClick={() => setShowNewPassword(!showNewPassword)}
               aria-label={showNewPassword ? 'Hide password' : 'Show password'}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#667085] hover:text-[#101828] transition-colors cursor-pointer"
+              className="absolute top-1/2 right-5 -translate-y-1/2 cursor-pointer md:right-4"
             >
-              <HugeiconsIcon icon={showNewPassword ? EyeOffIcon : ViewIcon} size={18} />
+              <Image src="/assets/forgot-password/eye-slash.svg" alt="" width={20} height={20} />
             </button>
-          </div>
-
-          <div className="flex flex-col gap-1.5 mt-2">
-            <RuleItem label="One letter (a-z)" isMet={hasLetter} isTyping={isTyping} />
-            <RuleItem label="One number (0–9)" isMet={hasNumber} isTyping={isTyping} />
-            <RuleItem label="One special character" isMet={hasSpecial} isTyping={isTyping} />
-            <RuleItem label="8 characters minimum" isMet={hasMinLength} isTyping={isTyping} />
           </div>
         </div>
 
-        <div className="flex flex-col gap-1.5 w-full">
-          <label htmlFor="confirm-password" className="text-sm font-medium text-[#344054]">
+        <div className="hidden flex-col gap-1 md:relative md:left-[5px] md:flex">
+          <RuleItem label="One letter (a-z)" isMet={hasLetter} isTyping={isTyping} />
+          <RuleItem label="One number (0-9)" isMet={hasNumber} isTyping={isTyping} />
+          <RuleItem label="One special character" isMet={hasSpecial} isTyping={isTyping} />
+          <RuleItem label="8 characters minimum" isMet={hasMinLength} isTyping={isTyping} />
+        </div>
+
+        <div className="flex w-full flex-col gap-1.5 md:relative md:left-[5px] md:gap-1">
+          <label
+            htmlFor="confirm-password"
+            className="text-[14px] leading-[21px] tracking-[-0.14px] text-[#1b1b1b] md:text-[18px] md:leading-[27px] md:tracking-[-0.18px]"
+          >
             Confirm New Password
           </label>
           <div className="relative w-full">
@@ -948,15 +1001,15 @@ function CreateNewPasswordStep({
               {...register('confirmPassword')}
               placeholder="••••••••"
               required
-              className="w-full h-12 pl-4 pr-12 rounded-xl border border-[#D0D5DD] bg-white text-base text-[#101828] placeholder-[#98A2B3] outline-none focus:border-[#1565C0] focus:ring-1 focus:ring-[#1565C0] transition-colors"
+              className="h-[52px] w-full rounded-[12px] border border-[#d0d0d0] bg-white pr-12 pl-5 text-[14px] text-[#2d2f2f] outline-none placeholder:text-[#8d8d8d] focus:border-[#1565C0] focus:ring-1 focus:ring-[#1565C0] md:h-[56px] md:rounded-[10px] md:border-[#d5d5d5] md:pl-4 md:text-[16px] md:text-[#1a1a1a]"
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#667085] hover:text-[#101828] transition-colors cursor-pointer"
+              className="absolute top-1/2 right-5 -translate-y-1/2 cursor-pointer md:right-4"
             >
-              <HugeiconsIcon icon={showConfirmPassword ? EyeOffIcon : ViewIcon} size={18} />
+              <Image src="/assets/forgot-password/eye-slash.svg" alt="" width={20} height={20} />
             </button>
           </div>
           {errors.confirmPassword && (
@@ -966,17 +1019,15 @@ function CreateNewPasswordStep({
           )}
         </div>
 
-        {apiError && (
-          <p className="text-xs italic font-medium text-[#F04438] text-center -mt-2">{apiError}</p>
-        )}
+        {apiError && <p className="text-center text-xs font-medium text-[#F04438]">{apiError}</p>}
 
         <button
           type="submit"
           disabled={isLoading || !isValid}
-          className={`w-full h-12 rounded-xl text-base font-semibold transition-colors flex items-center justify-center gap-2 select-none ${
+          className={`mt-[54px] flex h-[52px] w-full items-center justify-center gap-2 rounded-[12px] text-[16px] font-normal tracking-[-0.16px] transition-colors md:mt-[29px] md:h-[56px] ${
             isValid && !isLoading
               ? 'bg-[#1565C0] text-white hover:bg-[#1565C0]/90 cursor-pointer'
-              : 'bg-[#F2F4F7] text-[#98A2B3] cursor-not-allowed'
+              : 'bg-[#f5f5f5] text-[#767676] cursor-not-allowed'
           }`}
         >
           {isLoading ? (
@@ -1004,23 +1055,8 @@ function RuleItem({
 }) {
   if (isMet) {
     return (
-      <div className="flex items-center gap-2 text-xs font-medium text-[#12B76A]">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle cx="8" cy="8" r="8" fill="#12B76A" />
-          <path
-            d="M5 8l2 2 4-4"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+      <div className="flex h-[19px] items-center gap-2 text-[12px] font-medium leading-[18px] text-[#26965c]">
+        <Image src="/assets/forgot-password/check-circle.svg" alt="" width={19} height={19} />
         <span>{label}</span>
       </div>
     );
@@ -1028,32 +1064,18 @@ function RuleItem({
 
   if (isTyping) {
     return (
-      <div className="flex items-center gap-2 text-xs font-medium text-[#F04438]">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle cx="8" cy="8" r="8" fill="#F04438" />
-          <path
-            d="M5.5 5.5l5 5M10.5 5.5l-5 5"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
+      <div className="flex h-[19px] items-center gap-2 text-[12px] font-medium leading-[18px] text-[#ef4444]">
+        <Image src="/assets/forgot-password/error-circle.svg" alt="" width={19} height={19} />
         <span>{label}</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 text-xs font-medium text-[#667085]">
+    <div className="flex h-[19px] items-center gap-2 text-[12px] font-medium leading-[18px] text-[#667085]">
       <svg
-        width="14"
-        height="14"
+        width="19"
+        height="19"
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

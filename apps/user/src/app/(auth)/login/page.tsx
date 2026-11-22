@@ -1,58 +1,39 @@
-'use client';
-
 import Link from 'next/link';
-import {
-  Button,
-  Input,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@clinsight/ui';
+import { PatientAuthHeading } from '@/components/PatientAuthHeading';
+import { PatientSignInForm } from '@/components/PatientSignInForm';
 
-export default function UserLoginPage() {
+export default async function UserLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ signout?: string; password?: string }>;
+}) {
+  const { signout, password } = await searchParams;
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
-      <Card className="w-full max-w-md shadow-md">
-        <CardHeader className="text-center space-y-1">
-          <div className="mx-auto mb-2 text-2xl font-bold text-[#1565c0]">Clinsight</div>
-          <CardTitle className="text-xl">Sign in to Patient Portal</CardTitle>
-          <CardDescription>
-            Enter your email and password to access your health portal.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-xs font-medium text-gray-700">Email Address</label>
-            <Input type="email" placeholder="you@example.com" className="mt-1" />
-          </div>
-          <div>
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-gray-700">Password</label>
-              <a href="#" className="text-xs text-[#1565c0] hover:underline">
-                Forgot password?
-              </a>
-            </div>
-            <Input type="password" placeholder="••••••••" className="mt-1" />
-          </div>
-          <Button
-            variant="brand"
-            className="w-full"
-            onClick={() => {
-              window.location.href = '/';
-            }}
-          >
-            Sign In
-          </Button>
-          <div className="text-center text-xs text-gray-500 pt-2">
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="font-semibold text-[#1565c0] hover:underline">
-              Create an account
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <PatientAuthHeading
+        title="Welcome Back"
+        description="Sign in to access your health insights"
+      />
+      {signout === 'local' && (
+        <p role="status" className="mt-5 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+          You signed out of this browser. We couldn’t confirm that the server session ended.
+        </p>
+      )}
+      {password === 'updated' && (
+        <p role="status" className="mt-5 rounded-md bg-primary-subtle p-3 text-sm text-slate-700">
+          Your password was updated. Sign in with your new password.
+        </p>
+      )}
+      <PatientSignInForm />
+      <p className="mt-6 text-center text-sm text-slate-600">
+        Don’t have an account?{' '}
+        <Link
+          href="/signup"
+          className="font-semibold text-primary-blue underline underline-offset-2"
+        >
+          Sign Up
+        </Link>
+      </p>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 import { NextResponse, type NextProxy } from 'next/server';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.staging.useclinsight.com';
+import { backendUrl } from '@/lib/backend-url';
 
 const SECURITY_HEADERS: Record<string, string> = {
   'X-Frame-Options': 'DENY',
@@ -40,7 +40,7 @@ async function refreshSession(
   refreshToken: string,
 ): Promise<{ token: string; refreshToken?: string; expiresIn: number } | null> {
   try {
-    const res = await fetch(`${BASE_URL.replace(/\/$/, '')}/api/v1/auth/refresh`, {
+    const res = await fetch(backendUrl('/api/v1/auth/refresh'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ function applyCommonHeaders(response: NextResponse, requestId: string): NextResp
  */
 async function validateSession(activeToken: string): Promise<boolean> {
   try {
-    const url = `${BASE_URL.replace(/\/$/, '')}/api/v1/auth/me`;
+    const url = backendUrl('/api/v1/auth/me');
     const res = await fetch(url, {
       method: 'GET',
       headers: {

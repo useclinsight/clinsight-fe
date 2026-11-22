@@ -1,102 +1,26 @@
-# Next.js Starter
+# Clinsight frontend
 
-Next.js 16 + React 19 + Tailwind v4 + shadcn (radix-maia). Validated env, typed proxy, and the standard set of route conventions wired up.
+This pnpm workspace contains the Clinsight marketing site and the doctor, patient, and admin Next.js apps.
 
-## Stack
+## Apps
 
-- **Next.js 16** App Router (`proxy.ts`, `forbidden.tsx`, `unauthorized.tsx`)
-- **React 19**, **TypeScript** (strict)
-- **Tailwind v4** with shadcn `radix-maia` style
-- **`@t3-oss/env-nextjs`** + **Zod 4** for build-time env validation
+| App | Package | Local port |
+| --- | --- | --- |
+| Marketing | `@clinsight/web` | 3000 |
+| Doctor | `@clinsight/doctor` | 3001 |
+| Patient | `@clinsight/user` | 3002 |
+| Admin | `@clinsight/admin` | 3003 |
 
-## Getting started
+## Local setup
 
-```bash
-pnpm install
-cp .env.example .env.local   # fill in values
-pnpm dev
-```
+Install dependencies with `pnpm install`. Copy the relevant app's `.env.example` to `.env.local` and set its values. Next.js loads env files from each app directory.
 
-Open <http://localhost:3000>.
+Set `NEXT_PUBLIC_API_BASE_URL` to the backend origin, such as `https://api.useclinsight.com`, without a trailing `/api/v1`. Frontend calls append the paths in the [backend API documentation](https://api.useclinsight.com/docs). This is the only backend API URL variable.
 
-## Scripts
+Set `NEXT_PUBLIC_DOCTOR_APP_URL` in the marketing app to the doctor app's origin so the homepage signup button works outside local development.
 
-| Command          | What it does                     |
-| ---------------- | -------------------------------- |
-| `pnpm dev`       | Dev server                       |
-| `pnpm build`     | Production build (validates env) |
-| `pnpm start`     | Run the production build         |
-| `pnpm lint`      | ESLint                           |
-| `pnpm typecheck` | `tsc --noEmit`                   |
+PostHog runs only in the marketing app. Set `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` in `apps/web/.env.local` for browser analytics. The doctor app does not use PostHog.
 
-## Environment variables
+Start an app with `pnpm --filter @clinsight/doctor dev`, `pnpm --filter @clinsight/web dev`, or the corresponding patient/admin package. Run `pnpm typecheck` and `pnpm lint` to check the workspace.
 
-Schemas live in [`src/env/`](./src/env), split by side:
-
-- [`src/env/server.ts`](./src/env/server.ts) — server-only vars. t3-env throws at runtime if a client component reads it.
-- [`src/env/client.ts`](./src/env/client.ts) — `NEXT_PUBLIC_*` vars, safe everywhere.
-
-Both are imported in [`next.config.ts`](./next.config.ts) so the build fails on any malformed value. Set `SKIP_ENV_VALIDATION=1` to bypass (Docker, lint-only CI).
-
-| Var                    | Side   | Required | Notes                                 |
-| ---------------------- | ------ | -------- | ------------------------------------- |
-| `NODE_ENV`             | server | auto     | `development` / `test` / `production` |
-| `API_BASE_URL`         | server | optional | Upstream API for server-side `fetch`  |
-| `API_SECRET`           | server | optional | Bearer token forwarded server-side    |
-| `NEXT_PUBLIC_APP_URL`  | client | optional | Defaults to `http://localhost:3000`   |
-| `NEXT_PUBLIC_APP_NAME` | client | optional | Defaults to `Next Starter`            |
-
-Use it like:
-
-```ts
-// Server code (route handlers, Server Components, Server Actions)
-import { env } from '@/env/server';
-
-await fetch(`${env.API_BASE_URL}/users`, {
-  headers: { Authorization: `Bearer ${env.API_SECRET}` },
-});
-
-// Client code or shared metadata
-import { env } from '@/env/client';
-
-console.log(env.NEXT_PUBLIC_APP_URL);
-```
-
-## Proxy (`src/proxy.ts`)
-
-Replaces the legacy `middleware.ts` (Next.js 16 renamed it). It runs before the cache and:
-
-- Generates an `x-request-id` and forwards it to the request headers + response
-- Sets baseline security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`)
-- Skips static assets via the matcher
-
-Add auth gating, rewrites, or redirects there as needed. Note: `runtime` config is **not** allowed in `proxy.ts` — it always runs on Node.js.
-
-## Route conventions wired up
-
-| File                          | Purpose                                  |
-| ----------------------------- | ---------------------------------------- |
-| `src/app/loading.tsx`         | Root suspense fallback                   |
-| `src/app/error.tsx`           | Client error boundary (`unstable_retry`) |
-| `src/app/not-found.tsx`       | 404 page                                 |
-| `src/app/forbidden.tsx`       | 403 page (calls `forbidden()`)           |
-| `src/app/unauthorized.tsx`    | 401 page (calls `unauthorized()`)        |
-| `src/app/robots.ts`           | `/robots.txt`                            |
-| `src/app/sitemap.ts`          | `/sitemap.xml`                           |
-| `src/app/api/health/route.ts` | Liveness probe at `GET /api/health`      |
-
-`forbidden.tsx` and `unauthorized.tsx` require `experimental.authInterrupts: true`, already enabled in [`next.config.ts`](./next.config.ts).
-
-## Project layout
-
-```
-src/
-├── app/                # App Router routes & file conventions
-│   └── api/health/     # Liveness probe
-├── components/ui/      # shadcn components (added via `pnpm dlx shadcn@latest add ...`)
-├── lib/utils.ts        # cn() helper
-├── env/
-│   ├── server.ts       # Server-only env schema
-│   └── client.ts       # NEXT_PUBLIC_* env schema
-└── proxy.ts            # Next.js 16 proxy (formerly middleware)
-```
+If Turbopack fails to compile the doctor app locally, run `pnpm --filter @clinsight/doctor exec next dev --webpack -p 3001` instead.

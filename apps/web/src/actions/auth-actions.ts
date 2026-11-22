@@ -1,17 +1,6 @@
 'use server';
 
-const SIGNUP_URL =
-  process.env.NEXT_PUBLIC_SIGNUP_API_URL ||
-  'https://api.staging.useclinsight.com/api/v1/auth/doctor/signup';
-const SIGNIN_URL =
-  process.env.NEXT_PUBLIC_SIGNIN_API_URL ||
-  'https://api.staging.useclinsight.com/api/v1/auth/doctor/login';
-const VERIFY_OTP_URL =
-  process.env.NEXT_PUBLIC_VERIFY_OTP_API_URL ||
-  'https://api.staging.useclinsight.com/api/v1/auth/verify-otp';
-const RESEND_OTP_URL =
-  process.env.NEXT_PUBLIC_RESEND_OTP_API_URL ||
-  'https://api.staging.useclinsight.com/api/v1/auth/resend-otp';
+import { backendUrl } from '@/lib/backend-url';
 
 function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -200,10 +189,8 @@ export async function verifyOtpAction(email: string, code: string) {
     return { error: 'Invalid OTP. Please enter a 6-digit code.' };
   }
 
-  console.log(`Verifying OTP for ${email}: ${code} at ${VERIFY_OTP_URL}`);
-
   try {
-    const response = await fetch(VERIFY_OTP_URL, {
+    const response = await fetch(backendUrl('/api/v1/auth/verify-otp'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, code, purpose: 'email_verification', role: 'doctor' }),
@@ -253,7 +240,7 @@ export async function signupAction(data: {
   }
 
   try {
-    const response = await fetch(SIGNUP_URL, {
+    const response = await fetch(backendUrl('/api/v1/auth/doctor/signup'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -274,7 +261,7 @@ export async function signupAction(data: {
 
 export async function signinAction(data: { email: string; password: string }) {
   try {
-    const response = await fetch(SIGNIN_URL, {
+    const response = await fetch(backendUrl('/api/v1/auth/doctor/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -294,12 +281,11 @@ export async function resendOtpAction(email: string) {
   if (!email) return { error: 'Email is required to resend OTP.' };
 
   try {
-    const response = await fetch(RESEND_OTP_URL, {
+    const response = await fetch(backendUrl('/api/v1/auth/resend-otp'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email,
-        purpose: 'email_verification',
         role: 'doctor',
       }),
     });
@@ -312,10 +298,7 @@ export async function resendOtpAction(email: string) {
 }
 
 export async function getGoogleAuthUrlAction() {
-  return (
-    process.env.NEXT_PUBLIC_GOOGLE_AUTH_API_URL ||
-    'https://api.staging.useclinsight.com/api/v1/auth/google'
-  );
+  return backendUrl('/api/v1/auth/google');
 }
 
 export async function submitVerificationAction(formData: FormData) {

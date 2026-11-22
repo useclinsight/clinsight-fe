@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { trackPageView } from '@/lib/analytics/pixel';
-import { initializePostHog, restoreIdentityFromUrl } from '@/lib/analytics/posthog';
+import { initializePostHog } from '@/lib/analytics/posthog';
 
 function shouldTrackPostHog(pathname: string | null) {
   if (!pathname) return false;
@@ -17,22 +17,21 @@ function shouldTrackPostHog(pathname: string | null) {
 
 export function AnalyticsProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const searchParamsKey = searchParams.toString();
-  const hasTrackedInitialMetaPageView = useRef(false);
+  const lastTrackedMetaPathname = useRef<string | null>(null);
 
   useEffect(() => {
     if (!shouldTrackPostHog(pathname)) return;
     initializePostHog();
-    restoreIdentityFromUrl();
-  }, [pathname, searchParamsKey]);
+  }, [pathname]);
 
   useEffect(() => {
-    if (!hasTrackedInitialMetaPageView.current) {
-      hasTrackedInitialMetaPageView.current = true;
+    if (!pathname) return;
+    if (lastTrackedMetaPathname.current === null) {
+      lastTrackedMetaPathname.current = pathname;
       return;
     }
-
+    if (pathname === lastTrackedMetaPathname.current) return;
+    lastTrackedMetaPathname.current = pathname;
     trackPageView();
   }, [pathname]);
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { EMAIL_REGEX } from '@/lib/validation';
+import { backendUrl } from '@/lib/backend-url';
 
 export async function POST(request: Request) {
   try {
@@ -7,25 +8,21 @@ export async function POST(request: Request) {
     const { email } = body;
 
     // 1. Initial Local Input Check
-    if (!email || !EMAIL_REGEX.test(email.trim())) {
+    if (typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
       return NextResponse.json({ error: 'Valid email required' }, { status: 400 });
     }
-
-    const FORGOT_PASSWORD_API_URL =
-      process.env.NEXT_PUBLIC_AUTH_API_URL ||
-      'https://api.staging.useclinsight.com/api/v1/auth/forgot-password';
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     try {
-      const response = await fetch(FORGOT_PASSWORD_API_URL, {
+      const response = await fetch(backendUrl('/api/v1/auth/forgot-password'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim(), role: 'doctor' }),
         signal: controller.signal,
       });
 

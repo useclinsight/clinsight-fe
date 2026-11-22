@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { EMAIL_REGEX } from '@/lib/validation';
+import { backendUrl } from '@/lib/backend-url';
 
 export async function POST(request: Request) {
   try {
@@ -10,21 +11,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Valid email required' }, { status: 400 });
     }
 
-    const BACKEND_URL =
-      process.env.NEXT_PUBLIC_RESEND_OTP_API_URL ||
-      'https://api.staging.useclinsight.com/api/v1/auth/resend-otp';
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const response = await fetch(BACKEND_URL, {
+      const response = await fetch(backendUrl('/api/v1/auth/resend-otp'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim(), role: 'doctor' }),
         signal: controller.signal,
       });
 

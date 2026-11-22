@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { applyAuthCookies } from '@/lib/auth-session';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.staging.useclinsight.com';
+import { backendUrl } from '@/lib/backend-url';
 
 function getAccessToken(data: unknown) {
   if (!data || typeof data !== 'object') return null;
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const response = await fetch(`${BASE_URL}/api/v1/auth/doctor/login`, {
+    const response = await fetch(backendUrl('/api/v1/auth/doctor/login'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

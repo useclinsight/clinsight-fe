@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.staging.useclinsight.com';
+import { backendUrl } from '@/lib/backend-url';
 
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('token')?.value;
 
-    const response = await fetch(`${BASE_URL}/api/v1/auth/me`, {
+    const response = await fetch(backendUrl('/api/v1/auth/me'), {
       headers: {
         // Forward the auth header from the client
         Authorization: request.headers.get('Authorization') || (token ? `Bearer ${token}` : ''),
