@@ -1,6 +1,7 @@
 'use server';
 
 import { ContactFormDataType, contactSchema } from '@/schemas/contact-form-schema';
+import { backendUrl } from '@/lib/backend-url';
 
 // also Add the type of data that is going to be returned from the server, it can be a success message or an error message, it should be the same as the one returned from the server.
 export async function sendMessageAction(formData: ContactFormDataType) {
@@ -12,13 +13,13 @@ export async function sendMessageAction(formData: ContactFormDataType) {
     };
   }
 
-  const { fullName: full_name, email, subject, message, termsAgreement } = validatedData.data;
+  const { fullName: full_name, email, message } = validatedData.data;
 
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/v1/contact`, {
+    const response = await fetch(backendUrl('/api/v1/contact'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ full_name, email, subject, message, termsAgreement }),
+      body: JSON.stringify({ full_name, email, message }),
     });
 
     if (!response.ok) {

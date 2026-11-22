@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.staging.useclinsight.com';
+import { backendUrl } from '@/lib/backend-url';
 
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('token')?.value;
 
-    const response = await fetch(`${BASE_URL}/api/v1/doctors/availability`, {
+    const response = await fetch(backendUrl('/api/v1/doctors/availability'), {
       headers: {
         Authorization: request.headers.get('Authorization') || (token ? `Bearer ${token}` : ''),
         Cookie: request.headers.get('cookie') || '',
@@ -26,7 +26,7 @@ export async function PATCH(request: NextRequest) {
     const token = request.cookies.get('token')?.value;
     const body = await request.json();
 
-    const response = await fetch(`${BASE_URL}/api/v1/doctors/availability`, {
+    const response = await fetch(backendUrl('/api/v1/doctors/availability'), {
       method: 'PATCH',
       headers: {
         Authorization: request.headers.get('Authorization') || (token ? `Bearer ${token}` : ''),

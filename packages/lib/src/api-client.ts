@@ -1,7 +1,4 @@
-const DEFAULT_BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  process.env.API_BASE_URL ||
-  'https://api.staging.useclinsight.com';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.trim().replace(/\/+$/, '');
 
 export interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
@@ -24,10 +21,10 @@ function resolveUrl(path: string): string {
     return path;
   }
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  const baseUrl = DEFAULT_BACKEND_URL.replace(/\/$/, '');
 
   if (cleanPath.startsWith('/api/v1')) {
-    return `${baseUrl}${cleanPath}`;
+    if (!BACKEND_URL) throw new Error('NEXT_PUBLIC_API_BASE_URL is not configured');
+    return `${BACKEND_URL}${cleanPath}`;
   }
 
   if (typeof window !== 'undefined') {

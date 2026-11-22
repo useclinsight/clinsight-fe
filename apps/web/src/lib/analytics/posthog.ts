@@ -9,10 +9,7 @@ declare global {
 const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 // The Clinsight PostHog project is hosted in the EU region. Keep this
 // configurable so each deployment can use the host shown in Project Settings.
-const posthogHost = (process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://eu.i.posthog.com').replace(
-  /\/$/,
-  '',
-);
+const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST?.trim().replace(/\/+$/, '');
 const inMemoryAnalyticsIds = new Map<string, string>();
 
 function isExcludedPath(pathname: string) {
@@ -55,8 +52,8 @@ function filterExcludedRouteEvents(capture: CaptureResult | null) {
   return capture;
 }
 
-function getOpaqueAnalyticsId(kind: 'lead' | 'user') {
-  const storageKey = `clinsight_${kind}_analytics_id`;
+function getOpaqueAnalyticsId() {
+  const storageKey = 'clinsight_lead_analytics_id';
   const inMemoryId = inMemoryAnalyticsIds.get(storageKey);
   if (inMemoryId) return inMemoryId;
 
@@ -70,7 +67,7 @@ function getOpaqueAnalyticsId(kind: 'lead' | 'user') {
     // Storage can be unavailable in private or restricted browser contexts.
   }
 
-  const id = `${kind}_${crypto.randomUUID()}`;
+  const id = `lead_${crypto.randomUUID()}`;
   inMemoryAnalyticsIds.set(storageKey, id);
 
   try {
@@ -83,7 +80,7 @@ function getOpaqueAnalyticsId(kind: 'lead' | 'user') {
 }
 
 export function initializePostHog(): boolean {
-  if (!posthogKey || !canTrackCurrentRoute()) return false;
+  if (!posthogKey || !posthogHost || !canTrackCurrentRoute()) return false;
   if (window.__clinsightPostHogInitialized) return true;
 
   posthog.init(posthogKey, {
@@ -97,27 +94,9 @@ export function initializePostHog(): boolean {
   return true;
 }
 
-export function restoreIdentityFromUrl() {
-  if (!initializePostHog() || !canTrackCurrentRoute()) return;
-
-  const distinctId = new URLSearchParams(window.location.search).get('distinct_id')?.trim();
-  if (!distinctId || distinctId.length > 200) return;
-
-  posthog.identify(distinctId);
-
-  const sanitizedUrl = new URL(window.location.href);
-  sanitizedUrl.searchParams.delete('distinct_id');
-  window.history.replaceState(window.history.state, '', sanitizedUrl);
-}
-
 export function identifyLead() {
   if (!initializePostHog() || !canTrackCurrentRoute()) return;
-  posthog.identify(getOpaqueAnalyticsId('lead'));
-}
-
-export function identifyUser(userId: string, properties?: Record<string, string>) {
-  if (!initializePostHog() || !canTrackCurrentRoute()) return;
-  posthog.identify(userId, properties);
+  posthog.identify(getOpaqueAnalyticsId());
 }
 
 export function captureLead(source: 'guide' | 'waitlist') {
@@ -125,21 +104,7 @@ export function captureLead(source: 'guide' | 'waitlist') {
   posthog.capture('lead_captured', { source });
 }
 
-export function captureRegistration() {
-  if (!initializePostHog() || !canTrackCurrentRoute()) return;
-  const userId = getOpaqueAnalyticsId('user');
-  const previousId = posthog.get_distinct_id();
-  posthog.identify(userId);
-  if (previousId !== userId) posthog.alias(userId, previousId);
-  posthog.capture('registration_completed');
-}
-
 export function captureGuestEvent(event: string, properties?: Record<string, string>) {
   if (!initializePostHog() || !canTrackCurrentRoute()) return;
   posthog.capture(event, properties);
-}
-
-export function resetPostHog() {
-  if (!posthogKey || typeof window === 'undefined' || !window.__clinsightPostHogInitialized) return;
-  posthog.reset();
 }

@@ -13,4 +13,3 @@ function track(event: string) {
 
 export const trackGuideDownload = () => track('guide_download');
 export const trackWaitlist = () => track('join_waitlist');
-export const trackSignup = () => track('sign_up');

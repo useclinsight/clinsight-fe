@@ -12,7 +12,3 @@ export function trackLead() {
 export function trackPageView() {
   window.fbq?.('track', 'PageView');
 }
-
-export function trackRegistration() {
-  window.fbq?.('track', 'CompleteRegistration');
-}
