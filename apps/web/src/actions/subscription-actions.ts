@@ -9,12 +9,10 @@ type SubscriptionActionResult =
 
 const subscriptionDestinations = {
   lead_magnet: {
-    groupId: process.env.MAILERLITE_LEAD_MAGNET_GROUP_ID?.trim(),
-    tags: ['lead_magnet_guide'],
+    groupId: process.env.SENDER_LEAD_MAGNET_GROUP_ID?.trim() || "",
   },
   waitlist: {
-    groupId: process.env.MAILERLITE_WAITLIST_GROUP_ID?.trim(),
-    tags: ['waitlist'],
+    groupId: process.env.SENDER_WAITLIST_GROUP_ID?.trim() || "",
   },
 } as const;
 
@@ -38,7 +36,6 @@ export async function submitSubscriptionAction(input: unknown): Promise<Subscrip
         email,
         first_name,
         group_id: destination.groupId,
-        tags: destination.tags,
       }),
       signal: AbortSignal.timeout(15000),
     });
