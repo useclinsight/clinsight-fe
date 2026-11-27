@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { PatientPreviewNotice } from '@/components/PatientPreviewNotice';
+import { MobileNav } from '@/components/patient/MobileNav';
 import { PatientSignOutButton } from '@/components/PatientSignOutButton';
 import { SessionRecovery } from '@/components/SessionRecovery';
 import { UserHeader } from '@/components/UserHeader';
@@ -25,11 +25,9 @@ export default async function PatientPageTemplate({ children }: { children: Reac
       <UserSidebar />
       <div className="min-w-0">
         <UserHeader firstName={session.patient.first_name} lastName={session.patient.last_name} />
-        <main className="px-5 py-6 md:px-10 md:py-9">
-          <PatientPreviewNotice />
-          {children}
-        </main>
+        <main className="px-5 pb-24 py-6 md:px-10 md:pb-9 md:py-9">{children}</main>
       </div>
+      <MobileNav />
     </div>
   );
 }
