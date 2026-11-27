@@ -63,7 +63,7 @@ export type NotificationItem = {
 	id: string;
 	type: 'interpretation_ready' | 'interpretation_failed';
 	title: string;
-	message: string | null;
+	message: string | Record<string, unknown> | null;
 	data: unknown | null;
 	medical_case_id: string | null;
 	is_read: boolean;

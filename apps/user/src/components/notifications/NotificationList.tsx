@@ -4,13 +4,23 @@ import { Badge, Button, Card, CardContent } from '@clinsight/ui';
 import { Bell, CheckCheck, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
+import type { NotificationItem } from '@/lib/patient-api';
 import {
 	markAllNotificationsReadAction,
 	markNotificationReadAction,
 	updateNotificationPreferenceAction,
 } from '@/actions/patient-notifications';
 
-export type NotificationView = {
+function textFrom(value: unknown): string | null {
+	if (typeof value === 'string') return value;
+	if (value && typeof value === 'object' && 'text' in value) {
+		const text = (value as { text: unknown }).text;
+		return typeof text === 'string' ? text : null;
+	}
+	return null;
+}
+
+type NotificationView = {
 	id: string;
 	title: string;
 	message: string | null;
@@ -42,7 +52,7 @@ export function NotificationList({
 	initialUnreadCount,
 	initialNotifyOnComplete,
 }: {
-	notifications: NotificationView[];
+	notifications: NotificationItem[];
 	initialUnreadCount: number;
 	initialNotifyOnComplete: boolean;
 }) {
@@ -53,9 +63,17 @@ export function NotificationList({
 	const [busyId, setBusyId] = useState<string | null>(null);
 	const [isPending, startTransition] = useTransition();
 
-	const items = notifications.map((item) =>
-		readOverrides[item.id] ? { ...item, is_read: true } : item,
-	);
+	const items: NotificationView[] = notifications.map((item) => {
+		const view: NotificationView = {
+			id: item.id,
+			title: textFrom(item.title) ?? 'New insight',
+			message: textFrom(item.message),
+			medical_case_id: item.medical_case_id,
+			is_read: item.is_read || Boolean(readOverrides[item.id]),
+			created_at: item.created_at,
+		};
+		return view;
+	});
 	const newlyRead = notifications.filter(
 		(item) => !item.is_read && readOverrides[item.id],
 	).length;
@@ -253,7 +271,7 @@ export function NotificationList({
 										{item.medical_case_id && (
 											<Button asChild variant="link" size="sm">
 												<Link
-													href="/records"
+													href={`/insights/${item.medical_case_id}`}
 													aria-label={`View the result for ${item.title}`}
 													onClick={() => {
 														if (!item.is_read) handleMarkRead(item.id);
