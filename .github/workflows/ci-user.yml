@@ -1,0 +1,69 @@
+name: CI - Patient App
+
+# Patient app (apps/user) quality gate. Triggered for PRs that touch the app or
+# any of its shared workspace dependencies, and reusable by cd-user.yml.
+on:
+  pull_request:
+    branches:
+      - dev
+      - staging
+      - main
+    paths:
+      - 'apps/user/**'
+      - 'packages/ui/**'
+      - 'packages/lib/**'
+      - 'packages/types/**'
+      - 'packages/config/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'turbo.json'
+      - 'eslint.config.mjs'
+      - '.github/workflows/ci-user.yml'
+      - '.github/workflows/cd-user.yml'
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-user-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CI: true
+
+jobs:
+  quality:
+    name: Lint, Typecheck and Build (patient app)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint patient app
+        run: pnpm --filter @clinsight/user lint
+
+      - name: Typecheck patient app
+        run: pnpm --filter @clinsight/user typecheck
+
+      - name: Build patient app
+        env:
+          SKIP_ENV_VALIDATION: '1'
+        run: pnpm build:user

@@ -1,0 +1,108 @@
+name: CD - Patient App
+
+# Vercel deployment for apps/user. Mirrors cd.yml (apps/web) but targets the
+# patient app's Vercel project through VERCEL_USER_PROJECT_ID.
+on:
+  push:
+    branches:
+      - staging
+      - main
+    paths:
+      - 'apps/user/**'
+      - 'packages/ui/**'
+      - 'packages/lib/**'
+      - 'packages/types/**'
+      - 'packages/config/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'turbo.json'
+      - '.github/workflows/ci-user.yml'
+      - '.github/workflows/cd-user.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-user-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    uses: ./.github/workflows/ci-user.yml
+
+  deploy-staging:
+    name: Deploy Patient App - Preview (Staging)
+    needs: validate
+    if: github.ref_name == 'staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_USER_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --cwd apps/user --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --cwd apps/user --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --cwd apps/user --token=${{ secrets.VERCEL_TOKEN }}
+
+  deploy-production:
+    name: Deploy Patient App - Production (Main)
+    needs: validate
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_USER_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --cwd apps/user --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --cwd apps/user --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --cwd apps/user --token=${{ secrets.VERCEL_TOKEN }}
