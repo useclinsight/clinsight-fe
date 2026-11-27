@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { ArrowLeft, Download, FileText } from 'lucide-react';
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@clinsight/ui';
+import { ArrowLeft, ChevronDown, Download, FileText } from 'lucide-react';
+import { Badge, Button, Card, CardContent } from '@clinsight/ui';
 
 import { patientApi } from '@/lib/patient-api';
 import { getPatientSession } from '@/lib/patient-session';
@@ -90,9 +90,9 @@ export default async function InsightDetailPage({
 			) : null}
 
 			{interpretation?.status === 'complete' ? (
-				<Card className="rounded-[14px] border-outline-border bg-white shadow-none">
-					<CardHeader>
-						<CardTitle className="flex flex-wrap items-center gap-2">
+				<details className="group rounded-[14px] border border-outline-border bg-white shadow-none">
+					<summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 p-4 [&::-webkit-details-marker]:hidden">
+						<span className="flex flex-wrap items-center gap-2 text-base font-semibold text-gray-900">
 							Detailed Assessment
 							{interpretation.risk_level ? (
 								<Badge variant={interpretation.risk_level === 'high' ? 'destructive' : 'warning'}>
@@ -100,9 +100,10 @@ export default async function InsightDetailPage({
 								</Badge>
 							) : null}
 							{interpretation.confidence ? <Badge variant="info">{interpretation.confidence} confidence</Badge> : null}
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-5">
+						</span>
+						<ChevronDown aria-hidden="true" className="size-4 text-slate-500 transition group-open:rotate-180" />
+					</summary>
+					<div className="space-y-5 border-t border-outline-border p-4">
 						<p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800">
 							{interpretation.summary}
 						</p>
@@ -122,8 +123,8 @@ export default async function InsightDetailPage({
 								</ul>
 							</div>
 						) : null}
-					</CardContent>
-				</Card>
+					</div>
+				</details>
 			) : null}
 
 			{detail.lab_results.length > 0 || hasFailure ? (
@@ -153,6 +154,7 @@ export default async function InsightDetailPage({
 				caseId={caseId}
 				messages={detail.chats}
 				suggestedQuestions={interpretation?.suggested_questions ?? []}
+				hasLabs={detail.lab_results.some((lab) => lab.ocr_status === 'complete')}
 			/>
 		</div>
 	);

@@ -19,11 +19,19 @@ export function ChatPanel({
 	caseId,
 	messages: initialMessages,
 	suggestedQuestions = [],
+	hasLabs = false,
 }: {
 	caseId: string;
 	messages: ChatMessage[];
 	suggestedQuestions?: string[];
+	hasLabs?: boolean;
 }) {
+	const iceBreakers =
+		suggestedQuestions.length > 0
+			? suggestedQuestions
+			: hasLabs
+				? ['Explain my results in simple terms', 'Which values should I ask my doctor about?', 'Are any of these results urgent?']
+				: [];
 	const [text, setText] = useState('');
 	const [pending, startTransition] = useTransition();
 	const { messages, streaming, connected, send } = useFloChat(caseId, initialMessages);
@@ -92,9 +100,9 @@ export function ChatPanel({
 				)}
 			</div>
 
-			{suggestedQuestions.length > 0 ? (
+			{iceBreakers.length > 0 ? (
 				<div className="flex flex-wrap gap-2" aria-label="Suggested questions">
-					{suggestedQuestions.map((question) => (
+					{iceBreakers.map((question) => (
 						<Button
 							key={question}
 							size="xs"
