@@ -62,3 +62,8 @@ jobs:
         env:
           SKIP_ENV_VALIDATION: '1'
         run: pnpm build:user
+
+      - name: Build admin application
+        env:
+          SKIP_ENV_VALIDATION: '1'
+        run: pnpm build:admin
