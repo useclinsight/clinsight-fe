@@ -5,7 +5,8 @@ import { LoaderCircle, Send, Stethoscope } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button, Input } from '@clinsight/ui';
 
-import { requestSecondOpinionAction, sendChatAction } from '@/actions/patient-data';
+import { requestSecondOpinionAction } from '@/actions/patient-data';
+import { useFloChat } from '@/hooks/useFloChat';
 import type { ChatMessage } from '@/lib/patient-api';
 
 function messageText(content: ChatMessage['content']) {
@@ -16,7 +17,7 @@ function messageText(content: ChatMessage['content']) {
 
 export function ChatPanel({
 	caseId,
-	messages,
+	messages: initialMessages,
 	suggestedQuestions = [],
 }: {
 	caseId: string;
@@ -25,17 +26,12 @@ export function ChatPanel({
 }) {
 	const [text, setText] = useState('');
 	const [pending, startTransition] = useTransition();
+	const { messages, streaming, connected, send } = useFloChat(caseId, initialMessages);
 
-	const send = (value: string) => {
+	const submit = (value: string) => {
 		if (!value.trim()) return;
-		startTransition(async () => {
-			const result = await sendChatAction(caseId, value);
-			if (!result.ok) {
-				toast.error(result.message);
-				return;
-			}
-			setText('');
-		});
+		send(value);
+		setText('');
 	};
 
 	const secondOpinion = () => {
@@ -55,6 +51,7 @@ export function ChatPanel({
 				<h2 id="chat-heading" className="text-lg font-semibold text-gray-900">
 					Chat with Flo
 				</h2>
+				<span className="text-xs text-slate-500">{connected ? 'Flo is online' : 'Connecting to Flo…'}</span>
 				<Button size="sm" variant="outline" onClick={secondOpinion} disabled={pending} className="gap-2">
 					<Stethoscope aria-hidden="true" className="size-4" />
 					Get a doctor’s second opinion
@@ -67,7 +64,8 @@ export function ChatPanel({
 						Ask a question about your results to start the conversation.
 					</p>
 				) : (
-					messages.map((message) => {
+					<>
+						{messages.map((message) => {
 						const mine = message.sender_type === 'patient';
 						return (
 							<div key={message.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
@@ -82,7 +80,15 @@ export function ChatPanel({
 								</p>
 							</div>
 						);
-					})
+					})}
+					{streaming !== null ? (
+						<div className="flex justify-start">
+							<p className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-tl-none bg-slate-100 px-4 py-2.5 text-sm text-gray-800">
+								{streaming || <span className="text-slate-500">Flo is thinking…</span>}
+							</p>
+						</div>
+						) : null}
+					</>
 				)}
 			</div>
 
@@ -94,7 +100,7 @@ export function ChatPanel({
 							size="xs"
 							variant="outline"
 							disabled={pending}
-							onClick={() => send(question)}
+							onClick={() => submit(question)}
 						>
 							{question}
 						</Button>
@@ -106,13 +112,13 @@ export function ChatPanel({
 				className="flex gap-2"
 				onSubmit={(event) => {
 					event.preventDefault();
-					send(text);
+					submit(text);
 				}}
 			>
 				<Input
 					value={text}
 					onChange={(event) => setText(event.target.value)}
-					placeholder="Ask Chris about your results…"
+					placeholder="Ask Flo about your results…"
 					aria-label="Message"
 					className="flex-1"
 				/>

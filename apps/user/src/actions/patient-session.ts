@@ -93,6 +93,11 @@ export async function refreshSessionAction(): Promise<
 	};
 }
 
+export async function getChatTokenAction(): Promise<string | null> {
+	const { accessToken } = await readSessionCookies();
+	return accessToken ?? null;
+}
+
 export async function signOut() {
   const { accessToken, refreshToken } = await readSessionCookies();
   let result: 'ok' | 'expired' | 'unavailable' = 'ok';

@@ -7,6 +7,7 @@ import { getPatientSession } from '@/lib/patient-session';
 import { ChatPanel } from '@/components/patient/ChatPanel';
 import { ProcessingWatcher } from '@/components/patient/ProcessingWatcher';
 import { AddResultForm } from '@/components/patient/AddResultForm';
+import { RetryAnalysisButton } from '@/components/patient/RetryAnalysisButton';
 
 export default async function InsightDetailPage({
 	params,
@@ -33,8 +34,13 @@ export default async function InsightDetailPage({
 
 	const detail = result.data;
 	const interpretation = detail.interpretation;
+	const failedLab = detail.lab_results.find((lab) => lab.ocr_status === 'failed');
+	const hasFailure =
+		detail.case.status === 'failed' ||
+		interpretation?.status === 'failed' ||
+		failedLab !== undefined;
 	const isProcessing =
-		!interpretation || (interpretation.status !== 'complete' && interpretation.status !== 'failed');
+		!hasFailure && (!interpretation || (interpretation.status !== 'complete' && interpretation.status !== 'failed'));
 
 	return (
 		<div className="mx-auto max-w-4xl space-y-6">
@@ -51,7 +57,9 @@ export default async function InsightDetailPage({
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2">
-					<Badge variant={detail.case.status === 'complete' ? 'success' : 'info'}>{detail.case.status}</Badge>
+					<Badge variant={hasFailure ? 'destructive' : detail.case.status === 'complete' ? 'success' : 'info'}>
+						{detail.case.status}
+					</Badge>
 					<Button asChild size="sm" variant="outline" className="gap-2">
 						<a href={`/api/cases/${caseId}/export`}>
 							<Download aria-hidden="true" className="size-4" /> Download report
@@ -64,9 +72,20 @@ export default async function InsightDetailPage({
 				<ProcessingWatcher caseId={caseId} initialStage={isNew ? 0 : 1} />
 			) : null}
 
-			{interpretation?.status === 'failed' ? (
-				<div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">
-					Something went wrong while interpreting this report. Add a clearer image and try again.
+			{hasFailure ? (
+				<div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-5">
+					<div>
+						<p className="text-sm font-semibold text-red-800">We couldn’t finish this analysis</p>
+						<p className="mt-0.5 text-sm text-red-700">
+							You can retry the same report, or add a clearer image below.
+						</p>
+					</div>
+					{(failedLab ?? detail.lab_results[0]) ? (
+						<RetryAnalysisButton
+							caseId={caseId}
+							labResultId={(failedLab ?? detail.lab_results[0]).id}
+						/>
+					) : null}
 				</div>
 			) : null}
 
@@ -107,10 +126,11 @@ export default async function InsightDetailPage({
 				</Card>
 			) : null}
 
-			{detail.lab_results.length > 0 ? (
+			{detail.lab_results.length > 0 || hasFailure ? (
 				<section aria-labelledby="reports-heading" className="space-y-3">
 					<h2 id="reports-heading" className="text-lg font-semibold text-gray-900">Your reports</h2>
-					<ul className="space-y-2">
+					{detail.lab_results.length > 0 ? (
+						<ul className="space-y-2">
 						{detail.lab_results.map((lab) => (
 							<li key={lab.id} className="flex items-center gap-3 rounded-xl border border-outline-border bg-white px-4 py-3">
 								<FileText aria-hidden="true" className="size-5 text-primary-blue" />
@@ -123,7 +143,8 @@ export default async function InsightDetailPage({
 								</Button>
 							</li>
 						))}
-					</ul>
+						</ul>
+					) : null}
 					<AddResultForm caseId={caseId} />
 				</section>
 			) : null}

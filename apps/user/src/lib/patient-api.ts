@@ -183,6 +183,10 @@ export const patientApi = {
 			body: form,
 		});
 	},
+	retryLabResult: (caseId: string, resultId: string) =>
+		patientRequest<LabResult>(`/api/v1/cases/${caseId}/lab-results/${resultId}/retry`, {
+			method: 'POST',
+		}),
 	listChat: (caseId: string) => patientRequest<ChatMessage[]>(`/api/v1/cases/${caseId}/chat`),
 	sendChat: (caseId: string, text: string) =>
 		patientRequest<ChatMessage>(`/api/v1/cases/${caseId}/chat`, {

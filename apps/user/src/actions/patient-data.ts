@@ -47,6 +47,14 @@ export async function addLabResultAction(
 	return { ok: true, data: undefined };
 }
 
+export async function retryAnalysisAction(caseId: string, labResultId: string): Promise<ActionResult> {
+	const result = await patientApi.retryLabResult(caseId, labResultId);
+	if (!result.ok) return { ok: false, message: result.message };
+	revalidatePath(`/insights/${caseId}`);
+	revalidatePath('/insights');
+	return { ok: true, data: undefined };
+}
+
 export async function renameCaseAction(caseId: string, title: string): Promise<ActionResult> {
 	const parsed = titleSchema.safeParse(title);
 	if (!parsed.success) return { ok: false, message: 'Insight names must be 1–50 characters.' };
