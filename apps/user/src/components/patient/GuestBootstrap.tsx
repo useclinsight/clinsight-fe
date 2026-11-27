@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoaderCircle } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { startGuestSessionAction } from '@/actions/patient-guest';
 
