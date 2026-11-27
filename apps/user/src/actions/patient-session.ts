@@ -66,6 +66,38 @@ export async function restoreSession(): Promise<'restored' | 'expired' | 'unavai
   return profile.status === 'ok' ? 'restored' : 'unavailable';
 }
 
+export async function refreshSessionAction(): Promise<
+	{ status: 'ok'; refreshInMs: number } | { status: 'expired' | 'unavailable' }
+> {
+	const { refreshToken } = await readSessionCookies();
+	if (!refreshToken) return { status: 'expired' };
+
+	const result = await refreshPatient(refreshToken);
+	if (result.status === 'unavailable') return { status: 'unavailable' };
+	if (result.status === 'expired') {
+		await clearSessionCookies();
+		return { status: 'expired' };
+	}
+
+	const profile = await readPatient(result.tokens.access_token);
+	if (profile.status === 'denied' || profile.status === 'expired') {
+		await revokePatientSession(result.tokens.access_token, result.tokens.refresh_token);
+		await clearSessionCookies();
+		return { status: 'expired' };
+	}
+
+	await writeSessionCookies(result.tokens);
+	return {
+		status: 'ok',
+		refreshInMs: Math.max(30_000, Math.round(result.tokens.expires_in * 700)),
+	};
+}
+
+export async function getChatTokenAction(): Promise<string | null> {
+	const { accessToken } = await readSessionCookies();
+	return accessToken ?? null;
+}
+
 export async function signOut() {
   const { accessToken, refreshToken } = await readSessionCookies();
   let result: 'ok' | 'expired' | 'unavailable' = 'ok';

@@ -1,7 +1,7 @@
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { PatientPreviewNotice } from '@/components/PatientPreviewNotice';
-import { PatientSignOutButton } from '@/components/PatientSignOutButton';
-import { SessionRecovery } from '@/components/SessionRecovery';
+import { MobileNav } from '@/components/patient/MobileNav';
+import { SessionKeepAlive } from '@/components/patient/SessionKeepAlive';
 import { UserHeader } from '@/components/UserHeader';
 import { UserSidebar } from '@/components/UserSidebar';
 import { getPatientSession } from '@/lib/patient-session';
@@ -10,26 +10,22 @@ export default async function PatientPageTemplate({ children }: { children: Reac
   const session = await getPatientSession();
   if (session.status !== 'ok') {
     if (session.status === 'signed-out') redirect('/login');
-    if (session.status === 'refresh') return <SessionRecovery />;
-    return (
-      <main className="mx-auto max-w-lg space-y-4 px-6 py-16">
-        <h1 className="text-2xl font-semibold">Patient portal temporarily unavailable</h1>
-        <p role="alert">Please refresh this page to try again.</p>
-        <PatientSignOutButton />
-      </main>
-    );
+    // A refresh already succeeded but the session is still invalid — break the loop.
+    const jar = await cookies();
+    if (jar.get('auth_retry')?.value === 'ok') redirect('/api/auth/logout?reason=refresh_failed');
+    const pathname = (await headers()).get('x-matched-path') ?? '/';
+    redirect(`/api/auth/refresh?next=${encodeURIComponent(pathname)}`);
   }
 
   return (
     <div className="min-h-dvh md:grid md:grid-cols-[250px_minmax(0,1fr)]">
+      <SessionKeepAlive />
       <UserSidebar />
       <div className="min-w-0">
         <UserHeader firstName={session.patient.first_name} lastName={session.patient.last_name} />
-        <main className="px-5 py-6 md:px-10 md:py-9">
-          <PatientPreviewNotice />
-          {children}
-        </main>
+        <main className="px-5 pb-24 py-6 md:px-10 md:pb-9 md:py-9">{children}</main>
       </div>
+      <MobileNav />
     </div>
   );
 }
