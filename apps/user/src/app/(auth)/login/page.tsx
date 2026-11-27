@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { PatientAuthHeading } from '@/components/PatientAuthHeading';
 import { PatientSignInForm } from '@/components/PatientSignInForm';
+import { GoogleAuthButton } from '@/components/patient/GoogleAuthButton';
 
 export default async function UserLoginPage({
   searchParams,
@@ -25,6 +26,12 @@ export default async function UserLoginPage({
         </p>
       )}
       <PatientSignInForm />
+      <div className="mt-5 flex items-center gap-3 text-xs text-slate-400">
+        <span className="h-px flex-1 bg-gray-200" /> or <span className="h-px flex-1 bg-gray-200" />
+      </div>
+      <div className="mt-4">
+        <GoogleAuthButton label="Sign in with Google" />
+      </div>
       <p className="mt-6 text-center text-sm text-slate-600">
         Don’t have an account?{' '}
         <Link
