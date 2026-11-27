@@ -1,7 +1,6 @@
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { MobileNav } from '@/components/patient/MobileNav';
-import { PatientSignOutButton } from '@/components/PatientSignOutButton';
-import { SessionRecovery } from '@/components/SessionRecovery';
 import { UserHeader } from '@/components/UserHeader';
 import { UserSidebar } from '@/components/UserSidebar';
 import { getPatientSession } from '@/lib/patient-session';
@@ -10,14 +9,8 @@ export default async function PatientPageTemplate({ children }: { children: Reac
   const session = await getPatientSession();
   if (session.status !== 'ok') {
     if (session.status === 'signed-out') redirect('/login');
-    if (session.status === 'refresh') return <SessionRecovery />;
-    return (
-      <main className="mx-auto max-w-lg space-y-4 px-6 py-16">
-        <h1 className="text-2xl font-semibold">Patient portal temporarily unavailable</h1>
-        <p role="alert">Please refresh this page to try again.</p>
-        <PatientSignOutButton />
-      </main>
-    );
+    const pathname = (await headers()).get('x-matched-path') ?? '/';
+    redirect(`/api/auth/refresh?next=${encodeURIComponent(pathname)}`);
   }
 
   return (
