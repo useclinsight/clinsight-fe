@@ -34,6 +34,12 @@ export default async function UserLoginPage({
           Sign Up
         </Link>
       </p>
+      <p className="mt-3 text-center text-sm text-slate-600">
+        Or{' '}
+        <Link href="/guest" className="font-semibold text-primary-blue underline underline-offset-2">
+          try a lab report without an account
+        </Link>
+      </p>
     </>
   );
 }
