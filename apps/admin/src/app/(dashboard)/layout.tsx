@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { AdminSidebar } from '@/components/AdminSidebar';
 import { AdminHeader } from '@/components/AdminHeader';
+import { AdminSessionKeepAlive } from '@/components/AdminSessionKeepAlive';
 
 export default function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50">
+      <AdminSessionKeepAlive />
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <AdminHeader onMenuToggle={() => setSidebarOpen((prev) => !prev)} />
