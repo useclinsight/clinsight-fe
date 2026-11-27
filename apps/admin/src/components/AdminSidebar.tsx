@@ -71,7 +71,8 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
         <div className="border-t border-gray-100 p-4">
           <button
-            onClick={() => {
+            onClick={async () => {
+              await fetch('/api/auth/logout', { method: 'POST' });
               window.location.href = '/login';
             }}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"

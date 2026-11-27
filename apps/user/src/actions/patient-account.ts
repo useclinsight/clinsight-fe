@@ -13,6 +13,7 @@ import {
 } from '@/lib/patient-account-flow';
 import { authRequest, patientSessionResponseSchema } from '@/lib/patient-auth-api';
 import { writeSessionCookies } from '@/lib/patient-session';
+import { clearGuestId, getGuestId } from '@/lib/patient-guest';
 import {
   emailCodeSchema,
   newPasswordSchema,
@@ -72,6 +73,7 @@ export async function verifyPatientEmail(input: unknown, expectedEmail: string) 
   const parsed = emailCodeSchema.safeParse(input);
   if (!parsed.success) return invalidCode;
 
+  const guestSessionId = await getGuestId();
   const response = await submit('verify-otp', {
     email,
     code: parsed.data.code,
@@ -79,6 +81,7 @@ export async function verifyPatientEmail(input: unknown, expectedEmail: string) 
     role: 'patient',
     platform: 'web',
     device_id: randomUUID(),
+    ...(guestSessionId ? { guest_session_id: guestSessionId } : {}),
   });
   if (!response?.ok) return failure(response, invalidCode);
   const session = patientSessionResponseSchema.safeParse(await response.json().catch(() => null));
@@ -86,6 +89,7 @@ export async function verifyPatientEmail(input: unknown, expectedEmail: string) 
 
   await writeSessionCookies(session.data.data);
   await clearEmailFlow('signup');
+  await clearGuestId();
   redirect('/');
 }
 

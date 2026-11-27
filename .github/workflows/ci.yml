@@ -57,3 +57,8 @@ jobs:
         env:
           SKIP_ENV_VALIDATION: '1'
         run: pnpm build:web
+
+      - name: Build patient application
+        env:
+          SKIP_ENV_VALIDATION: '1'
+        run: pnpm build:user
