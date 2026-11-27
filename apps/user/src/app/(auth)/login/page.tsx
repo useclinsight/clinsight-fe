@@ -6,9 +6,9 @@ import { GoogleAuthButton } from '@/components/patient/GoogleAuthButton';
 export default async function UserLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ signout?: string; password?: string }>;
+  searchParams: Promise<{ signout?: string; password?: string; reason?: string }>;
 }) {
-  const { signout, password } = await searchParams;
+  const { signout, password, reason } = await searchParams;
   return (
     <>
       <PatientAuthHeading
@@ -18,6 +18,11 @@ export default async function UserLoginPage({
       {signout === 'local' && (
         <p role="status" className="mt-5 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
           You signed out of this browser. We couldn’t confirm that the server session ended.
+        </p>
+      )}
+      {reason === 'refresh_failed' && (
+        <p role="alert" className="mt-5 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+          Your session could not be renewed. Please sign in again.
         </p>
       )}
       {password === 'updated' && (

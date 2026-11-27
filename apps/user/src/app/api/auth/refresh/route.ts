@@ -25,6 +25,7 @@ export async function GET(request: Request) {
 		const response = NextResponse.redirect(new URL(target, url));
 		response.cookies.set('patient_access', '', { ...cookieOptions, maxAge: 0 });
 		response.cookies.set('patient_refresh', '', { ...cookieOptions, maxAge: 0 });
+		response.cookies.set('auth_retry', '', { ...cookieOptions, maxAge: 0 });
 		return response;
 	};
 
@@ -49,5 +50,6 @@ export async function GET(request: Request) {
 		maxAge: refreshed.tokens.expires_in,
 	});
 	response.cookies.set('patient_refresh', refreshed.tokens.refresh_token, cookieOptions);
+	response.cookies.set('auth_retry', 'ok', { ...cookieOptions, maxAge: 60 });
 	return response;
 }

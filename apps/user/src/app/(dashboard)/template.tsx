@@ -1,4 +1,4 @@
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { MobileNav } from '@/components/patient/MobileNav';
 import { SessionKeepAlive } from '@/components/patient/SessionKeepAlive';
@@ -10,6 +10,9 @@ export default async function PatientPageTemplate({ children }: { children: Reac
   const session = await getPatientSession();
   if (session.status !== 'ok') {
     if (session.status === 'signed-out') redirect('/login');
+    // A refresh already succeeded but the session is still invalid — break the loop.
+    const jar = await cookies();
+    if (jar.get('auth_retry')?.value === 'ok') redirect('/api/auth/logout?reason=refresh_failed');
     const pathname = (await headers()).get('x-matched-path') ?? '/';
     redirect(`/api/auth/refresh?next=${encodeURIComponent(pathname)}`);
   }
