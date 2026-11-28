@@ -6,9 +6,9 @@ import { GoogleAuthButton } from '@/components/patient/GoogleAuthButton';
 export default async function UserLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ signout?: string; password?: string; reason?: string }>;
+  searchParams: Promise<{ signout?: string; password?: string; reason?: string; oauth_error?: string }>;
 }) {
-  const { signout, password, reason } = await searchParams;
+  const { signout, password, reason, oauth_error } = await searchParams;
   return (
     <>
       <PatientAuthHeading
@@ -18,6 +18,11 @@ export default async function UserLoginPage({
       {signout === 'local' && (
         <p role="status" className="mt-5 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
           You signed out of this browser. We couldn’t confirm that the server session ended.
+        </p>
+      )}
+      {oauth_error === 'wrong_role' && (
+        <p role="alert" className="mt-5 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+          That Google account is registered as a doctor account. Please use the doctor portal.
         </p>
       )}
       {reason === 'refresh_failed' && (

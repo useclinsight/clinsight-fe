@@ -21,9 +21,22 @@ export function middleware(request: NextRequest) {
 	const accessToken = request.nextUrl.searchParams.get('access_token');
 	if (!accessToken) return NextResponse.next();
 
+	// Google tokens are role-scoped. Never put a doctor/admin token in patient cookies.
+	const role = request.nextUrl.searchParams.get('role');
+	if (role && role !== 'patient') {
+		const url = request.nextUrl.clone();
+		url.pathname = '/login';
+		url.search = '';
+		url.searchParams.set('oauth_error', 'wrong_role');
+		return NextResponse.redirect(url);
+	}
+
 	const url = request.nextUrl.clone();
+	const authPage = url.pathname === '/login' || url.pathname === '/signup';
 	url.searchParams.delete('access_token');
 	url.searchParams.delete('refresh_token');
+	url.searchParams.delete('role');
+	if (authPage) url.pathname = '/';
 
 	const response = NextResponse.redirect(url);
 	const options = {
