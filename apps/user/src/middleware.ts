@@ -32,8 +32,11 @@ export function middleware(request: NextRequest) {
 	}
 
 	const url = request.nextUrl.clone();
+	const authPage = url.pathname === '/login' || url.pathname === '/signup';
 	url.searchParams.delete('access_token');
 	url.searchParams.delete('refresh_token');
+	url.searchParams.delete('role');
+	if (authPage) url.pathname = '/';
 
 	const response = NextResponse.redirect(url);
 	const options = {
