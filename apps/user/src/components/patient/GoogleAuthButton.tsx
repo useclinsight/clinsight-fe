@@ -7,6 +7,8 @@ function googleAuthUrl(): string {
 	const url = new URL(base);
 	url.searchParams.set('role', 'patient');
 	url.searchParams.set('platform', 'web');
+	const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+	if (appUrl) url.searchParams.set('return_url', `${appUrl.replace(/\/+$/, '')}/login`);
 	return url.toString();
 }
 
