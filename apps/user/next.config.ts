@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   logging: { serverFunctions: false },
   experimental: {
     // Allow multipart overhead around a 10 MB report.
+    proxyClientMaxBodySize: '11mb',
     serverActions: { bodySizeLimit: '11mb' },
   },
   transpilePackages: ['@clinsight/ui', '@clinsight/lib', '@clinsight/types'],

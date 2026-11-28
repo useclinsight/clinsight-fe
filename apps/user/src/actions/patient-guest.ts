@@ -10,7 +10,7 @@ import {
   type GuestCaseDetail,
 } from '@/lib/patient-guest';
 
-import { guestLabTypes, maxGuestLabSize } from '@/lib/guest-lab-file';
+import { guestLabFileLimitMb, guestLabTypes } from '@/lib/guest-lab-file';
 
 type Result<T = undefined> = { ok: true; data: T } | { ok: false; message: string };
 
@@ -27,10 +27,11 @@ export async function guestUploadAction(formData: FormData): Promise<Result<{ ca
   const file = formData.get('file');
   if (!(file instanceof File) || file.size === 0)
     return { ok: false, message: 'Choose a lab report to upload.' };
-  if (file.size > maxGuestLabSize)
+  const maxSizeMb = guestLabFileLimitMb();
+  if (file.size > maxSizeMb * 1024 * 1024)
     return {
       ok: false,
-      message: 'File size limit exceeded. Please upload a file 10 MB or smaller.',
+      message: `Choose a file that is ${maxSizeMb} MB or smaller.`,
     };
   if (!guestLabTypes.includes(file.type))
     return { ok: false, message: 'Upload a JPEG, PNG, WebP or PDF lab report.' };

@@ -6,7 +6,7 @@ import { Dialog } from 'radix-ui';
 import { useState } from 'react';
 import { GuestUpload } from './patient/GuestUpload';
 
-export function PatientGuestUploadSheet() {
+export function PatientGuestUploadSheet({ maxSizeMb }: { maxSizeMb: number }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -40,7 +40,7 @@ export function PatientGuestUploadSheet() {
             </Dialog.Close>
           </div>
           <div className="px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))] sm:px-8">
-            <GuestUpload inSheet onUploaded={() => setOpen(false)} />
+            <GuestUpload maxSizeMb={maxSizeMb} inSheet onUploaded={() => setOpen(false)} />
           </div>
         </Dialog.Content>
       </Dialog.Portal>

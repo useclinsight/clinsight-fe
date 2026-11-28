@@ -26,7 +26,7 @@ const slides = [
   },
 ];
 
-export function PatientWelcome() {
+export function PatientWelcome({ uploadLimitMb }: { uploadLimitMb: number }) {
   const [activeSlide, setActiveSlide] = useState(0);
   const { title, description, image } = slides[activeSlide];
 
@@ -36,9 +36,9 @@ export function PatientWelcome() {
         <Image
           src="/assets/header-assets/clinsight-logo.svg"
           alt="Clinsight"
-          width={148}
-          className="h-auto"
-          height={39}
+          width={175}
+          height={45}
+          className="h-auto w-[148px]"
         />
         <section className="mt-5 grid items-center gap-7 md:mt-10 md:grid-cols-[1.15fr_1fr] md:gap-10 lg:gap-16">
           <div className="relative mx-auto h-[clamp(13rem,35dvh,25rem)] w-full rounded-3xl bg-[#eff5fc] md:h-[min(65dvh,36rem)]">
@@ -88,7 +88,7 @@ export function PatientWelcome() {
               <Button asChild variant="brand" className="h-12 rounded-xl text-base">
                 <Link href="/signup">Get started</Link>
               </Button>
-              <PatientGuestUploadSheet />
+              <PatientGuestUploadSheet maxSizeMb={uploadLimitMb} />
             </div>
             <p className="mt-4 text-center text-sm text-slate-600">
               Already have an account?{' '}

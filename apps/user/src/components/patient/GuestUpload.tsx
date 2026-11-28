@@ -7,14 +7,16 @@ import { FileText, LoaderCircle, UploadCloud } from 'lucide-react';
 import { Button } from '@clinsight/ui';
 
 import { guestUploadAction } from '@/actions/patient-guest';
-import { guestLabTypes, maxGuestLabSize } from '@/lib/guest-lab-file';
+import { guestLabTypes } from '@/lib/guest-lab-file';
 
 type Selection = { file: File; preview?: string };
 
 export function GuestUpload({
+  maxSizeMb,
   inSheet = false,
   onUploaded,
 }: {
+  maxSizeMb: number;
   inSheet?: boolean;
   onUploaded?: () => void;
 }) {
@@ -43,8 +45,8 @@ export function GuestUpload({
       setMessage('Choose a JPEG, PNG, WebP, or PDF file.');
       return;
     }
-    if (!file.size || file.size > maxGuestLabSize) {
-      setMessage('Choose a non-empty file that is 10 MB or smaller.');
+    if (!file.size || file.size > maxSizeMb * 1024 * 1024) {
+      setMessage(`Choose a non-empty file that is ${maxSizeMb} MB or smaller.`);
       return;
     }
 
@@ -135,7 +137,9 @@ export function GuestUpload({
       ) : (
         <div className={inSheet ? 'text-center' : undefined}>
           <h2 className="text-xl font-semibold text-gray-900">Upload your lab result</h2>
-          <p className="mt-2 text-sm text-slate-600">JPEG, PNG, WebP, and PDF files up to 10 MB.</p>
+          <p className="mt-2 text-sm text-slate-600">
+            JPEG, PNG, WebP, and PDF files up to {maxSizeMb} MB.
+          </p>
           <Button
             type="button"
             variant="brand"
