@@ -120,10 +120,18 @@ export default function LoginContent() {
     const accessToken = params.get('access_token');
     const refreshToken = params.get('refresh_token');
     const state = params.get('state');
+    const role = params.get('role');
 
     if (!oauthError && !code && !accessToken) return;
 
     window.history.replaceState(null, '', window.location.pathname);
+
+    if (role && role !== 'doctor') {
+      const msg = 'That Google account is registered as a patient. Please use the patient app.';
+      queueMicrotask(() => setApiError(msg));
+      toast.error(msg);
+      return;
+    }
 
     if (oauthError) {
       const msg =
@@ -264,6 +272,8 @@ export default function LoginContent() {
     try {
       const googleUrl = new URL(backendUrl('/api/v1/auth/google'));
       googleUrl.searchParams.set('role', 'doctor');
+      googleUrl.searchParams.set('platform', 'web');
+      googleUrl.searchParams.set('return_url', `${window.location.origin}/login`);
       window.location.href = googleUrl.toString();
     } catch {
       const msg = 'Unable to initiate Google authentication. Please try again.';
